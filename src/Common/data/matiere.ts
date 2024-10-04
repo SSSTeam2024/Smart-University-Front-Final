@@ -1,0 +1,58 @@
+const matieres = [
+    {
+      id: 1,
+      codeMatiere: "MAT101",
+      matiere: "Mathematique",
+      type: "Cours",
+      semestre: "S1",
+      volume: 40,
+      nbrElimination: 2,
+    },
+    {
+      id: 2,
+      codeMatiere: "MAT102",
+      matiere: "Mathematique",
+      type: "Cours",
+      semestre: "S1",
+      volume: 40,
+      nbrElimination: 2,
+    },
+    {
+      id: 3,
+      codeMatiere: "MAT103",
+      matiere: "Physique",
+      type: "Cours",
+      semestre: "S2",
+      volume: 42,
+      nbrElimination: 2,
+    },
+    {
+      id: 4,
+      codeMatiere: "MAT104",
+      matiere: "Mathematics",
+      type: "Cours",
+      semestre: "S1",
+      volume: 40,
+      nbrElimination: 9,
+    },
+    {
+      id: 5,
+      codeMatiere: "MAT105",
+      matiere: "Mathematics",
+      type: "Cours",
+      semestre: "S1",
+      volume: 40,
+      nbrElimination: 8,
+    },
+    {
+      id: 6,
+      codeMatiere: "MAT106",
+      matiere: "Mathematics",
+      type: "Cours",
+      semestre: "S2",
+      volume: 41,
+      nbrElimination: 2,
+    },
+  ];
+  
+  export { matieres };
