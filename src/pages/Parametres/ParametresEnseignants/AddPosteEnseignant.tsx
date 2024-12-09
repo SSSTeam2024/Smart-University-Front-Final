@@ -19,7 +19,7 @@ const AddPosteEnseignant = () => {
 
   const [formData, setFormData] = useState({
     _id: "",
-    value_poste_enseignant: "",
+    // value_poste_enseignant: "",
     poste_ar: "",
     poste_fr: "",
   });
@@ -48,11 +48,7 @@ const AddPosteEnseignant = () => {
       notify();
       navigate("/parametre/poste-enseignants");
     } catch (error: any) {
-      if (error.status === 400) {
-        errorAlert("La valeur doit être unique.");
-      } else {
-        errorAlert("La valeur doit être unique. Veuillez réessayer.");
-      }
+      console.log(error);
     }
   };
 
@@ -74,6 +70,7 @@ const AddPosteEnseignant = () => {
       timer: 2000,
     });
   };
+
   return (
     <React.Fragment>
       <div className="page-content">
@@ -90,20 +87,6 @@ const AddPosteEnseignant = () => {
                 ></div>
                 <input type="hidden" id="id-field" />
                 <Row>
-                  <Col lg={4}>
-                    <div className="mb-3">
-                      <Form.Label htmlFor="value_poste_enseignant">Valeur</Form.Label>
-                      <Form.Control
-                        type="text"
-                        id="value_poste_enseignant"
-                        placeholder=""
-                        required
-                        onChange={onChange}
-                        value={formData.value_poste_enseignant}
-                      />
-                    </div>
-                  </Col>
-
                   <Col lg={4}>
                     <div className="mb-3">
                       <Form.Label htmlFor="poste_fr">

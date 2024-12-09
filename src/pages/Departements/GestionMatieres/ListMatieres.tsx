@@ -1,4 +1,4 @@
-import React, {useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   Button,
   Card,
@@ -12,19 +12,22 @@ import {
 import Breadcrumb from "Common/BreadCrumb";
 import { Link, useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
-import FileSaver from 'file-saver';
+import FileSaver from "file-saver";
 import TableContainer from "Common/TableContainer";
 import Swal from "sweetalert2";
-import { useDeleteMatiereMutation, useFetchMatiereQuery } from "features/matiere/matiere";
+import {
+  useDeleteMatiereMutation,
+  useFetchMatiereQuery,
+} from "features/matiere/matiere";
 
 interface Matiere {
   _id: string;
-  code_matiere: string,
-  matiere: string,
-  type: string,
-  semestre: string,
-  volume: string,
-  nbr_elimination: string,
+  code_matiere: string;
+  matiere: string;
+  type: string;
+  semestre: string;
+  volume: string;
+  nbr_elimination: string;
 }
 
 const ListMatieres = () => {
@@ -91,141 +94,167 @@ const ListMatieres = () => {
       });
   };
 
-
   const columns = useMemo(
     () => [
-        {
-            Header: (<div className="form-check"> <input className="form-check-input" type="checkbox" id="checkAll" value="option" /> </div>),
-            Cell: (cellProps: any) => {
-                return (<div className="form-check"> <input className="form-check-input" type="checkbox" name="chk_child" defaultValue="option1" /> </div>);
-            },
-            id: '#',
+      {
+        Header: (
+          <div className="form-check">
+            {" "}
+            <input
+              className="form-check-input"
+              type="checkbox"
+              id="checkAll"
+              value="option"
+            />{" "}
+          </div>
+        ),
+        Cell: (cellProps: any) => {
+          return (
+            <div className="form-check">
+              {" "}
+              <input
+                className="form-check-input"
+                type="checkbox"
+                name="chk_child"
+                defaultValue="option1"
+              />{" "}
+            </div>
+          );
         },
-        {
-          Header: "Code matière",
-          accessor: "code_matiere",
-          disableFilters: true,
-          filterable: true,
+        id: "#",
       },
-        {
-            Header: "Matière",
-            accessor: "matiere",
-            disableFilters: true,
-            filterable: true,
+      {
+        Header: "Code matière",
+        accessor: "code_matiere",
+        disableFilters: true,
+        filterable: true,
+      },
+      {
+        Header: "Matière",
+        accessor: "matiere",
+        disableFilters: true,
+        filterable: true,
+      },
+
+      {
+        Header: "Type",
+        accessor: "type",
+        disableFilters: true,
+        filterable: true,
+      },
+      {
+        Header: "Semestre",
+        accessor: "semestre",
+        disableFilters: true,
+        filterable: true,
+      },
+  
+      {
+        Header: "Volume",
+        accessor: (row: Matiere) => row.volume || "---",
+        disableFilters: true,
+        filterable: true,
+      },
+  
+      {
+        Header: "Nbr élimination",
+        accessor: (row: Matiere) => row.nbr_elimination || "---",
+        disableFilters: true,
+        filterable: true,
+      },
+      {
+        Header: "Action",
+        disableFilters: true,
+        filterable: true,
+        accessor: (matiere: Matiere) => {
+          return (
+            <ul className="hstack gap-2 list-unstyled mb-0">
+              <li>
+                <Link
+                  to="/departement/gestion-matieres/edit-matiere"
+                  state={matiere}
+                  className="badge bg-primary-subtle text-primary edit-item-btn"
+                >
+                  <i
+                    className="ph ph-pencil-line"
+                    style={{
+                      transition: "transform 0.3s ease-in-out",
+                      cursor: "pointer",
+                      fontSize: "1.5em",
+                    }}
+                    onMouseEnter={(e) =>
+                      (e.currentTarget.style.transform = "scale(1.2)")
+                    }
+                    onMouseLeave={(e) =>
+                      (e.currentTarget.style.transform = "scale(1)")
+                    }
+                  ></i>
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="#"
+                  className="badge bg-danger-subtle text-danger remove-item-btn"
+                >
+                  <i
+                    className="ph ph-trash"
+                    style={{
+                      transition: "transform 0.3s ease-in-out",
+                      cursor: "pointer",
+                      fontSize: "1.5em",
+                    }}
+                    onMouseEnter={(e) =>
+                      (e.currentTarget.style.transform = "scale(1.2)")
+                    }
+                    onMouseLeave={(e) =>
+                      (e.currentTarget.style.transform = "scale(1)")
+                    }
+                    onClick={() => AlertDelete(matiere?._id!)}
+                  ></i>
+                </Link>
+              </li>
+            </ul>
+          );
         },
-       
-        {
-            Header: "Type",
-            accessor: "type",
-            disableFilters: true,
-            filterable: true,
-        },
-        {
-            Header: "Semestre",
-            accessor: "semestre",
-            disableFilters: true,
-            filterable: true,
-        },
-        {
-            Header: "Volume",
-            accessor: "volume",
-            disableFilters: true,
-            filterable: true,
-        },
-        {
-            Header: "Nbr élimination ",
-            accessor: "nbr_elimination",
-            disableFilters: true,
-            filterable: true,
-        },
-    
-       
-        {
-            Header: "Action",
-            disableFilters: true,
-            filterable: true,
-            accessor: (matiere: Matiere) => {
-                return (
-                    <ul className="hstack gap-2 list-unstyled mb-0">
-                      <li>
-                        <Link
-                           to="/departement/gestion-matieres/edit-matiere"
-                           state={matiere}
-                          className="badge bg-primary-subtle text-primary edit-item-btn"
-                    
-                        >
-                          <i
-                            className="ph ph-pencil-line"
-                            style={{
-                              transition: "transform 0.3s ease-in-out",
-                              cursor: "pointer",
-                              fontSize: "1.5em",
-                            }}
-                            onMouseEnter={(e) =>
-                              (e.currentTarget.style.transform = "scale(1.2)")
-                            }
-                            onMouseLeave={(e) =>
-                              (e.currentTarget.style.transform = "scale(1)")
-                            }
-                          ></i>
-                        </Link>
-                      </li>
-                      <li>
-                        <Link
-                          to="#"
-                          className="badge bg-danger-subtle text-danger remove-item-btn"
-                        >
-                          <i
-                            className="ph ph-trash"
-                            style={{
-                              transition: "transform 0.3s ease-in-out",
-                              cursor: "pointer",
-                              fontSize: "1.5em",
-                            }}
-                            onMouseEnter={(e) =>
-                              (e.currentTarget.style.transform = "scale(1.2)")
-                            }
-                            onMouseLeave={(e) =>
-                              (e.currentTarget.style.transform = "scale(1)")
-                            }
-                            onClick={() => AlertDelete(matiere?._id!)}
-                          ></i>
-                        </Link>
-                      </li>
-                    </ul>
-                  );
-            },
-        },
+      },
     ],
     []
-);
+  );
   const handleFileUpload = (event: any) => {
     const file = event.target.files[0];
     const reader = new FileReader();
     reader.onload = (e) => {
-        const data = new Uint8Array(e.target!.result as ArrayBuffer);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
-        const jsonData: Matiere[] = XLSX.utils.sheet_to_json(worksheet) as Matiere[];
-        setMatiere(jsonData);
-        setFilePath(file.name);
+      const data = new Uint8Array(e.target!.result as ArrayBuffer);
+      const workbook = XLSX.read(data, { type: "array" });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const jsonData: Matiere[] = XLSX.utils.sheet_to_json(
+        worksheet
+      ) as Matiere[];
+      setMatiere(jsonData);
+      setFilePath(file.name);
     };
     reader.readAsArrayBuffer(file);
-};
+  };
 
-const createAndDownloadExcel = () => {
+  const createAndDownloadExcel = () => {
     const ws = XLSX.utils.json_to_sheet([]);
     XLSX.utils.sheet_add_aoa(ws, [
-        ["codeMatiere", "matiere", "type", "semestre", "volume", "nbrElimination"]
+      [
+        "codeMatiere",
+        "matiere",
+        "type",
+        "semestre",
+        "volume",
+        "nbrElimination",
+      ],
     ]);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Matières");
-    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-    const blob = new Blob([wbout], { type: 'application/octet-stream' });
+    const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+    const blob = new Blob([wbout], { type: "application/octet-stream" });
     FileSaver.saveAs(blob, "template_matiere.xlsx");
-};
-
+  };
 
   return (
     <React.Fragment>
@@ -250,18 +279,6 @@ const createAndDownloadExcel = () => {
                         />
                         <i className="ri-search-line search-icon"></i>
                       </div>
-                    </Col>
-                    <Col className="col-lg-auto">
-                      <select
-                        className="form-select"
-                        id="idStatus"
-                        name="choices-single-default"
-                      >
-                        <option defaultValue="All">Status</option>
-                        <option value="All">tous</option>
-                        <option value="Active">Activé</option>
-                        <option value="Inactive">Desactivé</option>
-                      </select>
                     </Col>
 
                     <Col className="col-lg-auto ms-auto">
@@ -453,37 +470,44 @@ const createAndDownloadExcel = () => {
                 show={modal_ImportModals}
                 onHide={tog_ImportModals}
                 centered
-            >
+              >
                 <Modal.Header className="px-4 pt-4" closeButton>
-                    <h5 className="modal-title" id="exampleModalLabel">
-                        Importer matières
-                    </h5>
+                  <h5 className="modal-title" id="exampleModalLabel">
+                    Importer matières
+                  </h5>
                 </Modal.Header>
                 <Form className="tablelist-form">
-                    <Modal.Body className="p-4">
-                        Vous pouvez importer plusieurs matières à partir de ce
-                        template <a href="#" onClick={createAndDownloadExcel}>Cliquer ici pour télécharger</a>
-                        <Form.Group controlId="formFile" className="mt-3">
-                            <Form.Label>Upload Excel File</Form.Label>
-                            <Form.Control type="file" accept=".xlsx, .xls" onChange={handleFileUpload} />
-                        </Form.Group>
-                        {filePath && <p>File Path: {filePath}</p>}
-                    </Modal.Body>
-                    <div className="modal-footer">
-                        <div className="hstack gap-2 justify-content-end">
-                            <Button
-                                className="btn-ghost-danger"
-                                onClick={tog_ImportModals}
-                            >
-                                Fermer
-                            </Button>
-                            <Button variant="success" id="add-btn">
-                                Importer
-                            </Button>
-                        </div>
+                  <Modal.Body className="p-4">
+                    Vous pouvez importer plusieurs matières à partir de ce
+                    template{" "}
+                    <a href="#" onClick={createAndDownloadExcel}>
+                      Cliquer ici pour télécharger
+                    </a>
+                    <Form.Group controlId="formFile" className="mt-3">
+                      <Form.Label>Upload Excel File</Form.Label>
+                      <Form.Control
+                        type="file"
+                        accept=".xlsx, .xls"
+                        onChange={handleFileUpload}
+                      />
+                    </Form.Group>
+                    {filePath && <p>File Path: {filePath}</p>}
+                  </Modal.Body>
+                  <div className="modal-footer">
+                    <div className="hstack gap-2 justify-content-end">
+                      <Button
+                        className="btn-ghost-danger"
+                        onClick={tog_ImportModals}
+                      >
+                        Fermer
+                      </Button>
+                      <Button variant="success" id="add-btn">
+                        Importer
+                      </Button>
                     </div>
+                  </div>
                 </Form>
-            </Modal>
+              </Modal>
 
               <Card>
                 <Card.Body className="p-0">
@@ -492,18 +516,18 @@ const createAndDownloadExcel = () => {
                     className="table align-middle table-nowrap"
                     id="customerTable"
                   >
-             <TableContainer
-                columns={(columns || [])}
-                data={(data || [])}
-                // isGlobalFilter={false}
-                iscustomPageSize={false}
-                isBordered={false}
-                customPageSize={10}
-                className="custom-header-css table align-middle table-nowrap"
-                tableClass="table-centered align-middle table-nowrap mb-0"
-                theadClass="text-muted table-light"
-                SearchPlaceholder='Search Products...'
-            />
+                    <TableContainer
+                      columns={columns || []}
+                      data={data || []}
+                      // isGlobalFilter={false}
+                      iscustomPageSize={false}
+                      isBordered={false}
+                      customPageSize={10}
+                      className="custom-header-css table align-middle table-nowrap"
+                      tableClass="table-centered align-middle table-nowrap mb-0"
+                      theadClass="text-muted table-light"
+                      SearchPlaceholder="Search Products..."
+                    />
                   </table>
                   <div className="noresult" style={{ display: "none" }}>
                     <div className="text-center py-4">

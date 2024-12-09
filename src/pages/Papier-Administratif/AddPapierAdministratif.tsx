@@ -1,7 +1,6 @@
 import React, { useState } from "react";
-import { Button, Col, Container, Form, Row } from "react-bootstrap";
+import { Button, Col, Container, Form, Row, Card, Spinner } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import "flatpickr/dist/flatpickr.min.css";
 import Swal from "sweetalert2";
 import { useAddPapierAdministratifMutation } from "features/papierAdministratif/papierAdministratif";
 
@@ -16,11 +15,7 @@ const AddPapierAdministratif: React.FC = () => {
   document.title = "Ajouter Papier Administratif | Application Smart Institute";
   const navigate = useNavigate();
 
-  function tog_retourParametres() {
-    navigate("/listePapierAdministratif");
-  }
-
-  const [createPapierAdministratif] = useAddPapierAdministratifMutation();
+  const [createPapierAdministratif, { isLoading }] = useAddPapierAdministratifMutation();
 
   const [formData, setFormData] = useState<PapierAdministratif>({
     nom_ar: "",
@@ -30,63 +25,25 @@ const AddPapierAdministratif: React.FC = () => {
 
   const onCategoryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value, checked } = e.target;
-  
-    setFormData(prevFormData => {
+    setFormData((prevFormData) => {
       const updatedCategories = checked
         ? [...prevFormData.category, value]
-        : prevFormData.category.filter(category => category !== value);
-  
+        : prevFormData.category.filter((category) => category !== value);
+
       return {
         ...prevFormData,
         category: updatedCategories,
       };
     });
   };
-  
+
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prevState) => ({
       ...prevState,
-      [name]: value, 
+      [name]: value,
     }));
   };
-  
-
-  // const addNewFileField = () => {
-  //   setFormData((prevState) => ({
-  //     ...prevState,
-  //     files_papier_administratif: [
-  //       ...prevState.files_papier_administratif,
-  //       { nom_ar: "", nom_fr: "", category: [] }, // Initialize category as an empty array for new file
-  //     ],
-  //   }));
-  // };
-
-  // const onFileChange = (e: any, index: any) => {
-  //   const { name, value } = e.target;
-  //   const updatedFiles = [...formData.files_papier_administratif];
-
-  //   updatedFiles[index] = {
-  //     ...updatedFiles[index],
-  //     [name]: value
-  //   };
-
-  //   setFormData({
-  //     ...formData,
-  //     files_papier_administratif: updatedFiles
-  //   });
-  // };
-
-  // const removeFileField = (index: number) => {
-  //   setFormData((prevState) => {
-  //     const updatedFiles = [...prevState.files_papier_administratif];
-  //     updatedFiles.splice(index, 1);
-  //     return {
-  //       ...prevState,
-  //       files_papier_administratif: updatedFiles,
-  //     };
-  //   });
-  // };
 
   const errorAlert = (message: string) => {
     Swal.fire({
@@ -100,13 +57,11 @@ const AddPapierAdministratif: React.FC = () => {
 
   const onSubmitEtatEtudiant = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
     try {
       await createPapierAdministratif(formData).unwrap();
       notify();
       navigate("/listePapierAdministratif");
     } catch (error: any) {
-      console.log(error);
       errorAlert(error.message || "An error occurred.");
     }
   };
@@ -115,118 +70,109 @@ const AddPapierAdministratif: React.FC = () => {
     Swal.fire({
       position: "center",
       icon: "success",
-      title: "Type inscription étudiant a été crée avec succés",
-      showConfirmButton: false,
-      timer: 2000,
-    });
-  };
-
-  const error = (error: any) => {
-    Swal.fire({
-      position: "center",
-      icon: "error",
-      title: `Creation type inscription étudiant échoué ${error}`,
+      title: "Papier administratif ajouté avec succès",
       showConfirmButton: false,
       timer: 2000,
     });
   };
 
   return (
-    <React.Fragment>
-      <div className="page-content">
-        <Container fluid={true}>
-          <Row>
-            <Col lg={12}>
-              <Form className="tablelist-form" onSubmit={onSubmitEtatEtudiant}>
-                <div
-                  id="alert-error-msg"
-                  className="d-none alert alert-danger py-2"
-                ></div>
-                <input type="hidden" id="id-field" />
-                {/* File Inputs */}
-                <Row>
-                  <Col lg={12}>
-                    <div className="mb-3">
-                      <Form.Label>Nom Papier</Form.Label>
-                      <div className="border p-2 mb-3">
-                        <div className="d-flex mb-2 align-items-center">
-                          <Form.Control
-                            type="text"
-                            placeholder="Nom Fichier (Arabe)"
-                            name="nom_ar"
-                            required
-                            value={formData.nom_ar}
-                            onChange={onChange} 
-                            className="me-2"
-                          />
-                          <Form.Control
-                            type="text"
-                            placeholder="Nom Fichier (Français)"
-                            name="nom_fr"
-                            required
-                            value={formData.nom_fr}
-                            onChange={onChange} 
-                            className="me-2"
-                          />
-                          {/* <Button
-                              variant="danger"
-                              onClick={() => removeFileField(index)}
-                            >
-                              <i className="bi bi-trash-fill"></i>
-                            </Button> */}
-                        </div>
-                        {/* Category Selection for each file */}
-                        <Row className="mb-3">
-                          <Col lg={12}>
-                            <Form.Label>
-                              Sélectionnez une ou plusieurs catégories
-                            </Form.Label>
-                            <Form.Check
-                              type="checkbox"
-                              label="Personnel"
-                              value="personnel"
-                              checked={formData.category.includes("personnel")}
-                              onChange={onCategoryChange}
-                              className="me-2"
-                            />
-                            <Form.Check
-                              type="checkbox"
-                              label="Enseignant"
-                              value="enseignant"
-                              checked={formData.category.includes("enseignant")}
-                              onChange={onCategoryChange}
-                              className="me-2"
-                            />
-                          </Col>
-                        </Row>
-                      </div>
-                      {/* <Button variant="secondary" onClick={addNewFileField}>
-                        Ajouter nom dossier
-                      </Button> */}
-                    </div>
-                  </Col>
-                </Row>
+    <div className="page-content bg-light min-vh-100 d-flex align-items-center">
+      <Container fluid className="py-5">
+        <Row className="justify-content-center">
+          <Col lg={8}>
+            <Card className="shadow border-0 rounded-lg">
+              <Card.Header className="bg-primary text-white text-center">
+                <h4 className="mb-0">Ajouter un Papier Administratif</h4>
+              </Card.Header>
+              <Card.Body className="p-5">
+                <Form onSubmit={onSubmitEtatEtudiant}>
+                  {/* Nom Fichier */}
+                  <Row className="mb-4">
+                    <Col md={6}>
+                      <Form.Group>
+                        <Form.Label className="fw-semibold">Nom Fichier (Arabe)</Form.Label>
+                        <Form.Control
+                          type="text"
+                          placeholder="Entrez le nom en arabe"
+                          name="nom_ar"
+                          value={formData.nom_ar}
+                          onChange={onChange}
+                          required
+                          className="shadow-sm border-light transition-all"
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col md={6}>
+                      <Form.Group>
+                        <Form.Label className="fw-semibold">Nom Fichier (Français)</Form.Label>
+                        <Form.Control
+                          type="text"
+                          placeholder="Entrez le nom en français"
+                          name="nom_fr"
+                          value={formData.nom_fr}
+                          onChange={onChange}
+                          required
+                          className="shadow-sm border-light transition-all"
+                        />
+                      </Form.Group>
+                    </Col>
+                  </Row>
 
-                {/* Submit and Footer */}
-                <div className="modal-footer">
-                  <div className="hstack gap-2 justify-content-end">
+                  {/* Category Selection */}
+                  <Form.Group className="mb-4">
+                    <Form.Label className="fw-semibold">Sélectionnez une ou plusieurs catégories</Form.Label>
+                    <Row>
+                      <Col md={6}>
+                        <Form.Check
+                          type="checkbox"
+                          label="Personnel"
+                          value="personnel"
+                          checked={formData.category.includes("personnel")}
+                          onChange={onCategoryChange}
+                          className="mb-2"
+                          style={{ cursor: "pointer" }}
+                        />
+                      </Col>
+                      <Col md={6}>
+                        <Form.Check
+                          type="checkbox"
+                          label="Enseignant"
+                          value="enseignant"
+                          checked={formData.category.includes("enseignant")}
+                          onChange={onCategoryChange}
+                          className="mb-2"
+                          style={{ cursor: "pointer" }}
+                        />
+                      </Col>
+                    </Row>
+                  </Form.Group>
+
+                  {/* Buttons */}
+                  <div className="d-flex justify-content-between align-items-center">
                     <Button
-                      className="btn-ghost-danger"
-                      onClick={() => tog_retourParametres()}
+                      variant="outline-danger"
+                      className="rounded-pill px-4 py-2 transition-all"
+                      onClick={() => navigate("/listePapierAdministratif")}
                     >
                       Retour
                     </Button>
-                    <Button variant="success" id="add-btn" type="submit">
-                      Ajouter
+                    <Button
+                      variant="success"
+                      className="rounded-pill px-4 py-2 transition-all"
+                      type="submit"
+                      disabled={isLoading}
+                    >
+                      {isLoading ? <Spinner animation="border" size="sm" /> : "Ajouter"}
                     </Button>
                   </div>
-                </div>
-              </Form>
-            </Col>
-          </Row>
-        </Container>
-      </div>
-    </React.Fragment>
+                </Form>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+      </Container>
+    </div>
   );
 };
 

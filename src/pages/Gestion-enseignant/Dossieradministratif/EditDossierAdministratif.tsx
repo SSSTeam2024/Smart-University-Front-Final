@@ -102,10 +102,7 @@ const EditDossierAdministratifEnseignants = () => {
     const selectedPaper = filteredPapers.find(
       (paper) => paper.nom_fr === selectedNomFr
     );
-
-    // Update the formData with the selected paper's details
     if (selectedPaper) {
-      // Create a complete PapierAdministratif object
       const updatedPapier: PapierAdministratif = {
         _id: selectedPaper._id,
         nom_ar: selectedPaper.nom_ar,
@@ -134,19 +131,16 @@ const EditDossierAdministratifEnseignants = () => {
     event: React.ChangeEvent<HTMLSelectElement>
   ) => {
     const selectedEnseignantId = event.target.value;
-    console.log("Selected enseignant ID:", selectedEnseignantId);
     const doesSelectedEnseignantExist = allEnseignants.some(
-      (enseignant) =>
+      (enseignant:any) =>
         enseignant._id.trim().toLowerCase() ===
       selectedEnseignantId.trim().toLowerCase()
     );
-    console.log("Does Selected Personnel Exist:", doesSelectedEnseignantExist);
-    console.log("All enseignants:", allEnseignants);
-    allEnseignants.forEach((enseignant, index) => {
+    allEnseignants.forEach((enseignant:any, index:any) => {
       console.log(`Enseignant ${index}:`, enseignant);
     });
     const selectedEnseignant = allEnseignants.find(
-      (enseignant) =>
+      (enseignant:any) =>
         enseignant._id.trim().toLowerCase() ===
       selectedEnseignantId.trim().toLowerCase()
     ) || {
@@ -156,7 +150,6 @@ const EditDossierAdministratifEnseignants = () => {
       prenom_fr: "",
       prenom_ar: "",
     };
-    console.log("Selected Enseignant Object:", selectedEnseignant);
     setFormData((prevData) => {
       console.log("Previous Form Data:", prevData);
       return {
@@ -180,9 +173,51 @@ const EditDossierAdministratifEnseignants = () => {
     }
   };
 
-  function convertToBase64(
+  // function convertToBase64(
+  //   file: File
+  // ): Promise<{ base64Data: string; extension: string }> {
+  //   return new Promise((resolve, reject) => {
+  //     const fileReader = new FileReader();
+  //     fileReader.onload = () => {
+  //       const base64String = fileReader.result as string;
+  //       const [, base64Data] = base64String.split(",");
+  //       const extension = file.name.split(".").pop() ?? "";
+  //       resolve({ base64Data, extension });
+  //     };
+  //     fileReader.onerror = (error) => {
+  //       reject(error);
+  //     };
+  //     fileReader.readAsDataURL(file);
+  //   });
+  // }
+  // const handlePDFUpload = async (event: any, index: number) => {
+  //   const file = event.target.files?.[0];
+  //   if (file) {
+  //     try {
+  //       const { base64Data, extension } = await convertToBase64(file);
+  
+  //       // Update formData to store the base64 string and extension
+  //       setFormData((prevData) => ({
+  //         ...prevData,
+  //         papers: prevData.papers.map((paper, i) =>
+  //           i === index
+  //             ? {
+  //                 ...paper,
+  //                 FileBase64String: base64Data, // New file base64
+  //                 FileExtension: extension,    // New file extension
+  //                 file: "",                    // Will be replaced by new file
+  //               }
+  //             : paper
+  //         ),
+  //       }));
+  //     } catch (error) {
+  //       console.error("Error converting file to Base64:", error);
+  //     }
+  //   }
+  // };
+  const convertToBase64 = (
     file: File
-  ): Promise<{ base64Data: string; extension: string }> {
+  ): Promise<{ base64Data: string; extension: string }> => {
     return new Promise((resolve, reject) => {
       const fileReader = new FileReader();
       fileReader.onload = () => {
@@ -196,23 +231,22 @@ const EditDossierAdministratifEnseignants = () => {
       };
       fileReader.readAsDataURL(file);
     });
-  }
+  };
+
   const handlePDFUpload = async (event: any, index: number) => {
     const file = event.target.files?.[0];
     if (file) {
       try {
         const { base64Data, extension } = await convertToBase64(file);
-  
-        // Update formData to store the base64 string and extension
         setFormData((prevData) => ({
           ...prevData,
           papers: prevData.papers.map((paper, i) =>
             i === index
               ? {
                   ...paper,
-                  FileBase64String: base64Data, // New file base64
-                  FileExtension: extension,    // New file extension
-                  file: "",                    // Will be replaced by new file
+                  FileBase64String: base64Data,
+                  FileExtension: extension,
+                  file: "", // Will be handled by the server
                 }
               : paper
           ),
@@ -222,7 +256,6 @@ const EditDossierAdministratifEnseignants = () => {
       }
     }
   };
-
   const onChange = (e: any, index: number) => {
     setFormData((prevData) => ({
       ...prevData,
@@ -262,13 +295,10 @@ const EditDossierAdministratifEnseignants = () => {
         prenom_ar: formData.enseignant.prenom_ar,
       },
     };
-
-    console.log(preparedData);
-
     try {
       await editDossierAdministratif(preparedData).unwrap();
       notify();
-      navigate("/detailsDossierAdministratif");
+      navigate("/listeDossierAdministartif");
     } catch (error: any) {
       console.log("Error submitting form:", error);
     }
@@ -333,16 +363,16 @@ const EditDossierAdministratifEnseignants = () => {
                         className="form-select text-muted"
                         name="enseignant"
                         id="enseignant"
-                        value={formData?.enseignant?._id!}
+                        value={formData?.enseignant?._id || ""}
                         onChange={handleEnseignantChange}
+                        disabled
                       >
-                        <option value="">Sélectionner Enseignant</option>
-                        {allEnseignants.map((enseignant) => (
-                          <option key={enseignant._id} value={enseignant._id}>
-                            {`${enseignant.prenom_fr} ${enseignant.nom_fr}`}
-                          </option>
-                        ))}
-                      </select>
+                        <option value={formData?.enseignant?._id || ""}>
+                          {`${formData?.enseignant?.prenom_fr || ""} ${
+                            formData?.enseignant?.nom_fr || ""
+                          }`}
+                        </option>
+                        </select>
                     </div>
                   </Col>
                   <Col lg={10}>
@@ -355,7 +385,7 @@ const EditDossierAdministratifEnseignants = () => {
                             </Form.Label>
                             <Form.Select
                               aria-label={`Papier Administratif ${index}`}
-                              value={paper.file}
+                              value={paper.papier_administratif.nom_fr || ""}
                               onChange={(e) => handlePapierChange(e, index)}
                             >
                               <option value="">Sélectionner Papier</option>

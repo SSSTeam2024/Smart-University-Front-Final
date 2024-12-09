@@ -1,12 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Button, Col, Container, Form, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import "flatpickr/dist/flatpickr.min.css";
 import Swal from "sweetalert2";
-import {
-  Enseignant,
-  useFetchEnseignantsQuery,
-} from "features/enseignant/enseignantSlice";
+import { useFetchEnseignantsQuery } from "features/enseignant/enseignantSlice";
 import Flatpickr from "react-flatpickr";
 import { format } from "date-fns";
 import { useAddDossierAdministratifMutation } from "features/dossierAdministratif/dossierAdministratif";
@@ -42,18 +39,16 @@ export interface DossierAdministratif {
 
 const AddDossieradministratif = () => {
   document.title =
-    "Ajouter dossier Administratif | Application Smart Institute";
+    "Ajouter Dossier Administratif | Application Smart Institute";
   const navigate = useNavigate();
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
   function tog_retourParametres() {
-    navigate("/gestion-enseignant/liste-dossier-administartif");
+    navigate("/listeDossierAdministartif");
   }
 
   const [createDossierAdministratif] = useAddDossierAdministratifMutation();
-  const { data: allTeachers = [] } = useFetchEnseignantsQuery();
-  console.log("allTeachers", allTeachers);
-
+  const { data: allTeachers = [], refetch: refetchTeachers } =
+    useFetchEnseignantsQuery();
   const { data: allPapierAdministratifs = [] } =
     useFetchPapierAdministratifQuery();
 
@@ -68,8 +63,6 @@ const AddDossieradministratif = () => {
     },
   });
 
-  console.log("formData.enseignant._id", formData.enseignant._id);
-
   const [selectedCategory, setSelectedCategory] =
     useState<string>("enseignant");
 
@@ -79,7 +72,6 @@ const AddDossieradministratif = () => {
     );
   };
 
-  // Get filtered papers based on the selected category
   const filteredPapers = filterByCategory(selectedCategory);
 
   const handlePapierChange = (
@@ -90,10 +82,7 @@ const AddDossieradministratif = () => {
     const selectedPaper = filteredPapers.find(
       (paper) => paper.nom_fr === selectedNomFr
     );
-
-    // Update the formData with the selected paper's details
     if (selectedPaper) {
-      // Create a complete PapierAdministratif object
       const updatedPapier: PapierAdministratif = {
         _id: selectedPaper._id,
         nom_ar: selectedPaper.nom_ar,
@@ -119,20 +108,13 @@ const AddDossieradministratif = () => {
   };
 
   const handleTeacherChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    console.log("handle change teachers functions all teachers",allTeachers)
     const selectedTeacherId = event.target.value;
-    console.log("Selected Teacher ID:", selectedTeacherId);
-    const doesSelectedTeacherExist = allTeachers.some(
-      (teacher) =>
-        teacher._id.trim().toLowerCase() ===
-        selectedTeacherId.trim().toLowerCase()
-    );
-    console.log("Does Selected Teacher Exist:", doesSelectedTeacherExist);
-    console.log("All Teachers:", allTeachers);
-    allTeachers.forEach((teacher, index) => {
+    allTeachers.forEach((teacher:any, index:any) => {
       console.log(`Teacher ${index}:`, teacher);
     });
     const selectedTeacher = allTeachers.find(
-      (teacher) =>
+      (teacher:any) =>
         teacher._id.trim().toLowerCase() ===
         selectedTeacherId.trim().toLowerCase()
     ) || {
@@ -142,9 +124,7 @@ const AddDossieradministratif = () => {
       prenom_fr: "",
       prenom_ar: "",
     };
-    console.log("Selected Teacher Object:", selectedTeacher);
     setFormData((prevData) => {
-      console.log("Previous Form Data:", prevData);
       return {
         ...prevData,
         enseignant: selectedTeacher,
@@ -183,36 +163,12 @@ const AddDossieradministratif = () => {
       fileReader.readAsDataURL(file);
     });
   }
-  // const handlePDFUpload = async (event: any, index: number) => {
-  //   const file = event.target.files?.[0];
-  //   if (file) {
-  //     try {
-  //       const { base64Data, extension } = await convertToBase64(file);
-
-  //       setFormData((prevData) => ({
-  //         ...prevData,
-  //         papers: prevData.papers.map((paper, i) =>
-  //           i === index
-  //             ? {
-  //                 ...paper,
-  //                 uploadedFile: file,
-  //                 FileBase64String: base64Data,
-  //                 FileExtension: extension,
-  //               }
-  //             : paper
-  //         ),
-  //       }));
-  //     } catch (error) {
-  //       console.error("Error converting file to Base64:", error);
-  //     }
-  //   }
-  // };
   const handlePDFUpload = async (event: any, index: number) => {
     const file = event.target.files?.[0];
     if (file) {
       try {
         const { base64Data, extension } = await convertToBase64(file);
-  
+
         setFormData((prevData) => ({
           ...prevData,
           papers: prevData.papers.map((paper, i) =>
@@ -220,8 +176,8 @@ const AddDossieradministratif = () => {
               ? {
                   ...paper,
                   uploadedFile: file,
-                  FileBase64String: base64Data, // Store base64 data
-                  FileExtension: extension, // Store file extension
+                  FileBase64String: base64Data,
+                  FileExtension: extension,
                 }
               : paper
           ),
@@ -231,7 +187,7 @@ const AddDossieradministratif = () => {
       }
     }
   };
-  
+
   const onChange = (e: any, index: number) => {
     setFormData((prevData) => ({
       ...prevData,
@@ -245,20 +201,20 @@ const AddDossieradministratif = () => {
 
   const onSubmitDossier = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
-    if (!formData.enseignant._id || !isValidObjectId(formData.enseignant._id)) {
+
+    if (!formData.enseignant?._id || !isValidObjectId(formData?.enseignant?._id)) {
       console.error("Enseignant ID is missing or invalid.");
       return;
     }
-    
+
     const preparedData = {
       papers: formData.papers.map((paper) => ({
         papier_administratif: paper.papier_administratif,
         annee: paper.annee,
         remarques: paper.remarques,
-        file: paper.file, // Ensure file path or name is included
-        FileBase64String: paper.FileBase64String, // Ensure base64 data is included
-        FileExtension: paper.FileExtension, // Ensure extension is included
+        file: paper.file,
+        FileBase64String: paper.FileBase64String,
+        FileExtension: paper.FileExtension,
       })),
       enseignant: {
         _id: formData.enseignant._id,
@@ -268,17 +224,16 @@ const AddDossieradministratif = () => {
         prenom_ar: formData.enseignant.prenom_ar,
       },
     };
-  
+
     try {
       await createDossierAdministratif(preparedData).unwrap();
       notify();
+      refetchTeachers();
       navigate("/listeDossierAdministartif");
     } catch (error: any) {
       console.log("Error submitting form:", error);
     }
   };
-  
-
 
   const notify = () => {
     Swal.fire({
@@ -334,20 +289,24 @@ const AddDossieradministratif = () => {
                 <Row>
                   <Col lg={2}>
                     <div className="mb-3">
-                      <Form.Label htmlFor="classe">Enseignant</Form.Label>
+                      <Form.Label htmlFor="enseignant">Enseignant</Form.Label>
                       <select
                         className="form-select text-muted"
                         name="enseignant"
                         id="enseignant"
-                        value={formData.enseignant._id}
+                        value={formData?.enseignant?._id || ""}
                         onChange={handleTeacherChange}
                       >
                         <option value="">Sélectionner Enseignant</option>
-                        {allTeachers.map((enseignant) => (
-                          <option key={enseignant._id} value={enseignant._id}>
-                            {`${enseignant.prenom_fr} ${enseignant.nom_fr}`}
-                          </option>
-                        ))}
+                        {allTeachers
+                          .filter(
+                            (enseignant:any) => enseignant?.papers?.length === 0
+                          )
+                          .map((enseignant:any) => (
+                            <option key={enseignant._id} value={enseignant._id}>
+                              {`${enseignant.prenom_fr} ${enseignant.nom_fr}`}
+                            </option>
+                          ))}
                       </select>
                     </div>
                   </Col>

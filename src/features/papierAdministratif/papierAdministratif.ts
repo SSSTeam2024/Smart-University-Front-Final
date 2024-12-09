@@ -33,14 +33,15 @@ export const papierAdministratifSlice = createApi({
         },
         invalidatesTags: ["PapierAdministratif"],
       }),
-      // updatePapierAdministratif: builder.mutation<void, FileDetail>({
-      //   query: ({ _id, ...rest }) => ({
-      //     url: `/update-papier-administratif/${_id}`,
-      //     method: "PUT",
-      //     body: rest,
-      //   }),
-      //   invalidatesTags: ["PapierAdministratif"],
-      // }),
+      updatePapierAdministratif: builder.mutation<void, PapierAdministratif>({
+        query: ({ _id, ...rest }) => ({
+          url: `/update-papier-administratif`,
+          method: "PUT",
+          body: { _id, ...rest },
+        }),
+        invalidatesTags: ["PapierAdministratif"],
+      }),
+      
       deletePapierAdministratif: builder.mutation<void, string>({
         query: (_id) => ({
           url: `/delete-papier-administratif/${_id}`,
@@ -55,5 +56,6 @@ export const papierAdministratifSlice = createApi({
 export const {
 useAddPapierAdministratifMutation,
 useFetchPapierAdministratifQuery,
-useDeletePapierAdministratifMutation
+useDeletePapierAdministratifMutation,
+useUpdatePapierAdministratifMutation
 } = papierAdministratifSlice;

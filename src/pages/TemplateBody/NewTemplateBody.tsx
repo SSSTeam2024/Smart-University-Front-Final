@@ -1,303 +1,21 @@
-// import { useFetchShortCodeQuery } from "features/shortCode/shortCodeSlice";
-// import { useAddNewTemplateBodyMutation } from "features/templateBody/templateBodySlice";
-// import React, { useState } from "react";
-// import { Button, Card, Col, Container, Form, Row } from "react-bootstrap";
-// import { useNavigate } from "react-router-dom";
-// import { CKEditor } from "@ckeditor/ckeditor5-react";
-// import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
-// import Swal from "sweetalert2";
-
-// const NewTemplateBody = () => {
-//   document.title = "Ajouter Corps du Modèle | Smart Institute";
-
-//   const [newTemplateBody] = useAddNewTemplateBodyMutation();
-//   const { data: shortCodeList = [] } = useFetchShortCodeQuery();
-//   const navigate = useNavigate();
-
-//   const initialTemplateBody = {
-//     _id:"",
-//     title: "",
-//     body: "",
-//     langue: "",
-//     intended_for: "",
-//   };
-
-//   const [templateBody, setTemplateBody] = useState(initialTemplateBody);
-//   const [editorInstance, setEditorInstance] = useState<any>(null); // Store the editor instance
-
-//   const { title, body, langue, intended_for } = templateBody;
-
-//   const [selectedLangue, setSelectedLangue] = useState("");
-//   const [selectedIntendedFor, setSelectedIntendedFor] = useState("");
-
-//   const globalShortCodes = shortCodeList.filter(
-//     (code) => code.intended_for === "global"
-//   );
-//   const globalShortCodesAr = shortCodeList.filter(
-//     (code) => code.intended_for === "global" && code.langue === "arabic"
-//   );
-//   const globalShortCodesFr = shortCodeList.filter(
-//     (code) => code.intended_for === "global" && code.langue === "french"
-//   );
-
-//   const filteredShortCodeList = shortCodeList
-//     .filter((code) => code.intended_for !== "global") // Exclude GLOBAL shortcodes
-//     .filter(
-//       (code) =>
-//         (selectedLangue ? code.langue === selectedLangue : true) &&
-//         (selectedIntendedFor ? code.intended_for === selectedIntendedFor : true)
-//     );
-
-//   // Combine GLOBAL(arabic or french) shortcodes with filtered shortcodes
-//   let displayShortCodeList = [];
-//   if (selectedLangue === "arabic") {
-//     displayShortCodeList = [
-//       ...globalShortCodesAr,
-//       ...filteredShortCodeList.filter((code) => code.langue === "arabic"),
-//     ];
-//   } else if (selectedLangue === "french") {
-//     displayShortCodeList = [
-//       ...globalShortCodesFr,
-//       ...filteredShortCodeList.filter((code) => code.langue === "french"),
-//     ];
-//   } else {
-//     const globalShortCodes = shortCodeList.filter(
-//       (code) => code.intended_for === "global"
-//     );
-//     displayShortCodeList = [...globalShortCodes, ...filteredShortCodeList];
-//   }
-
-//   const onChange = (
-//     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-//   ) => {
-//     setTemplateBody((prevState) => ({
-//       ...prevState,
-//       [e.target.id]: e.target.value,
-//     }));
-//   };
-
-//   const onChangeLanguage = (e: React.ChangeEvent<HTMLSelectElement>) => {
-//     setTemplateBody((prevState) => ({
-//       ...prevState,
-//       langue: e.target.value,
-//     }));
-//     setSelectedLangue(e.target.value); // Update state for filtering
-//   };
-
-//   const onChangeIntendedFor = (e: React.ChangeEvent<HTMLSelectElement>) => {
-//     setTemplateBody((prevState) => ({
-//       ...prevState,
-//       intended_for: e.target.value,
-//     }));
-//     setSelectedIntendedFor(e.target.value); // Update state for filtering
-//   };
-
-//   const onBodyChange = (event: any, editor: any) => {
-//     const data = editor.getData();
-//     setTemplateBody((prevState) => ({
-//       ...prevState,
-//       body: data,
-//     }));
-//   };
-
- 
-//   const onShortCodeButtonClick = (code: string) => {
-//     setTemplateBody((prevState) => ({
-//       ...prevState,
-//       body: prevState.body + code,
-//     }));
-//   };
-
-//   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-//     e.preventDefault();
-//     newTemplateBody(templateBody).then(() =>
-//       setTemplateBody(initialTemplateBody)
-//     );
-//     notify();
-//     navigate("/template/liste-template-body");
-//   };
-
-//   const notify = () => {
-//     Swal.fire({
-//       position: "center",
-//       icon: "success",
-//       title: "Template Body has been created successfully",
-//       showConfirmButton: false,
-//       timer: 2000,
-//     });
-//   };
-
-//   return (
-//     <React.Fragment>
-//       <div className="page-content">
-//         <Container fluid={true}>
-//           <Row>
-//             <Col lg={12}>
-//               <Card>
-//                 <Card.Body>
-//                   <Card.Header>
-//                     <div className="d-flex">
-//                       <div className="flex-shrink-0 me-3">
-//                         <div className="avatar-sm">
-//                           <div className="avatar-title rounded-circle bg-light text-primary fs-20">
-//                             <i className="bi bi-person-lines-fill"></i>
-//                           </div>
-//                         </div>
-//                       </div>
-//                       <div className="flex-grow-1">
-//                         <h5 className="card-title">Nouveau Corps du Modèle</h5>
-//                       </div>
-//                     </div>
-//                   </Card.Header>
-//                   <Card.Body></Card.Body>
-//                   <div className="mb-3">
-//                     <Form onSubmit={onSubmit}>
-//                       <Row>
-//                         <Col lg={12}>
-//                           <div className="mb-3">
-//                             <Form.Label htmlFor="title">
-//                               <h4 className="card-title mb-0">Titre</h4>
-//                             </Form.Label>
-//                             <Form.Control
-//                               type="text"
-//                               id="title"
-//                               name="title"
-//                               placeholder="Entrer titre"
-//                               value={templateBody.title}
-//                               onChange={onChange}
-//                             />
-//                           </div>
-//                         </Col>
-//                         <Col lg={4}>
-//                           <div className="mb-3">
-//                             <Form.Label htmlFor="langue">Langue</Form.Label>
-//                             <select
-//                               className="form-select text-muted"
-//                               name="langue"
-//                               id="langue"
-//                               value={templateBody.langue}
-//                               onChange={onChangeLanguage}
-//                             >
-//                               <option value="">Sélectionner Langue</option>
-//                               <option value="arabic">Arabe</option>
-//                               <option value="french">Français</option>
-//                             </select>
-//                           </div>
-//                         </Col>
-//                         <Col lg={4}>
-//                           <div className="mb-3">
-//                             <Form.Label htmlFor="intended_for">
-//                               Destiné aux
-//                             </Form.Label>
-//                             <select
-//                               className="form-select text-muted"
-//                               name="intended_for"
-//                               id="intended_for"
-//                               value={templateBody.intended_for}
-//                               onChange={onChangeIntendedFor}
-//                             >
-//                               <option value="">Sélectionner</option>
-//                               <option value="enseignant">Enseignants</option>
-//                               <option value="etudiant">Etudiants</option>
-//                               <option value="personnel">Personnels</option>
-//                             </select>
-//                           </div>
-//                         </Col>
-//                       </Row>
-//                       <Row>
-//                         <Col lg={12}>
-//                           <div className="mb-3">
-//                             {displayShortCodeList.map((code) => (
-//                               <Button
-//                                 className="m-2"
-//                                 onClick={() =>
-//                                   onShortCodeButtonClick(code.body)
-//                                 }
-//                                 key={code._id} 
-//                               >
-//                                 {code.titre}
-//                               </Button>
-//                             ))}
-//                           </div>
-//                         </Col>
-//                       </Row>
-                     
-//                         <Row>
-//                   <Col lg={12}>
-//                     <Form.Label htmlFor="body" className="form-label">
-//                       Corps
-//                     </Form.Label>
-//                     <CKEditor
-//                       editor={ClassicEditor}
-//                       data={templateBody.body}
-//                       onChange={onBodyChange}
-//                       config={{
-//                         toolbar: [
-//                           "heading",
-//                           "|",
-//                           "bold",
-//                           "italic",
-//                           "link",
-//                           "bulletedList",
-//                           "numberedList",
-//                           "|",
-//                           "undo",
-//                           "redo",
-//                         ],
-//                         fontFamily: {
-//                           options: ["default", "Times New Roman"],
-//                         },
-//                         fontSize: {
-//                           options: [12, 14, 16],
-//                           default: 12,
-//                         },
-//                         // Add restrictions to limit body length
-//                         wordCount: {
-//                           onUpdate: (stats: any) => {
-//                             if (stats.characters > 1000) {
-//                               alert("Character limit exceeded!");
-//                             }
-//                           },
-//                         },
-//                       }}
-//                     />
-//                   </Col>
-//                 </Row>
-//                       <Col lg={12}>
-//                         <div className="hstack gap-2 justify-content-end">
-//                           <Button variant="primary" id="add-btn" type="submit">
-//                             Ajouter Corps
-//                           </Button>
-//                         </div>
-//                       </Col>
-//                     </Form>
-//                   </div>
-//                 </Card.Body>
-//               </Card>
-//             </Col>
-//           </Row>
-//         </Container>
-//       </div>
-//     </React.Fragment>
-//   );
-// };
-
-// export default NewTemplateBody;
-import { useFetchShortCodeQuery } from "features/shortCode/shortCodeSlice";
-import { useAddNewTemplateBodyMutation } from "features/templateBody/templateBodySlice";
-import React, { useState } from "react";
-import { Button, Card, Col, Container, Form, Row } from "react-bootstrap";
+import React, { useState, useRef } from "react";
+import { Button, Card, Col, Container, Form, Row, Spinner, FormControl } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
+import { Editor } from '@tinymce/tinymce-react';
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import Swal from "sweetalert2";
+import { useFetchShortCodeQuery } from "features/shortCode/shortCodeSlice";
+import { useAddNewTemplateBodyMutation } from "features/templateBody/templateBodySlice";
+import "./body.css";
+import JoditEditor from 'jodit-react';
 
 const NewTemplateBody = () => {
   document.title = "Ajouter Corps du Modèle | Smart Institute";
 
-  const [newTemplateBody] = useAddNewTemplateBodyMutation();
-  const { data: shortCodeList = [] } = useFetchShortCodeQuery();
   const navigate = useNavigate();
+  const [addNewTemplateBody, { isLoading }] = useAddNewTemplateBodyMutation();
+  const { data: shortCodeList = [] } = useFetchShortCodeQuery();
 
   const initialTemplateBody = {
     _id: "",
@@ -305,121 +23,175 @@ const NewTemplateBody = () => {
     body: "",
     langue: "",
     intended_for: "",
+    isArray: "0",
+    arraysNumber: "0",
   };
 
   const [templateBody, setTemplateBody] = useState(initialTemplateBody);
-  const [step, setStep] = useState(1); // Stepper state
+  const [step, setStep] = useState(1);
   const [selectedLangue, setSelectedLangue] = useState("");
   const [selectedIntendedFor, setSelectedIntendedFor] = useState("");
 
-  const { title, body, langue, intended_for } = templateBody;
+  const { title, body, langue, intended_for,  isArray,
+    arraysNumber } = templateBody;
 
- 
-  // Filter Global Shortcodes based on selected language
-  const globalShortCodesAr = shortCodeList.filter(
-    (code) => code.intended_for === "global" && code.langue === "arabic"
-  );
-  const globalShortCodesFr = shortCodeList.filter(
-    (code) => code.intended_for === "global" && code.langue === "french"
-  );
+    const globalShortCodesAr = shortCodeList.filter(
+          (code) => code.intended_for === "global" && code.langue === "arabic"
+        );
+        const globalShortCodesFr = shortCodeList.filter(
+          (code) => code.intended_for === "global" && code.langue === "french"
+        );
+      
+        // Filter non-global shortcodes based on selected language and intended for
+        const filteredShortCodeList = shortCodeList
+          .filter((code) => code.intended_for !== "global") // Exclude global shortcodes
+          .filter(
+            (code) =>
+              (selectedLangue ? code.langue === selectedLangue : true) &&
+              (selectedIntendedFor ? code.intended_for === selectedIntendedFor : true)
+          );
+      
+        // Combine global shortcodes based on the selected language
+        let displayShortCodeList = [];
+        if (selectedLangue === "arabic") {
+          displayShortCodeList = [
+            ...globalShortCodesAr,
+            ...filteredShortCodeList.filter((code) => code.langue === "arabic"),
+          ];
+        } else if (selectedLangue === "french") {
+          displayShortCodeList = [
+            ...globalShortCodesFr,
+            ...filteredShortCodeList.filter((code) => code.langue === "french"),
+          ];
+        } else {
+          displayShortCodeList = [
+            ...globalShortCodesAr,
+            ...globalShortCodesFr,
+            ...filteredShortCodeList,
+          ];
+        }
+        const onChangeLanguage = (e: React.ChangeEvent<HTMLSelectElement>) => {
+              setTemplateBody((prevState) => ({
+                ...prevState,
+                langue: e.target.value,
+              }));
+              setSelectedLangue(e.target.value);
+            };
+          
+            const onChangeIntendedFor = (e: React.ChangeEvent<HTMLSelectElement>) => {
+              setTemplateBody((prevState) => ({
+                ...prevState,
+                intended_for: e.target.value,
+              }));
+              setSelectedIntendedFor(e.target.value);
+            };
 
-  // Filter non-global shortcodes based on selected language and intended for
-  const filteredShortCodeList = shortCodeList
-    .filter((code) => code.intended_for !== "global") // Exclude global shortcodes
-    .filter(
-      (code) =>
-        (selectedLangue ? code.langue === selectedLangue : true) &&
-        (selectedIntendedFor ? code.intended_for === selectedIntendedFor : true)
-    );
 
-  // Combine global shortcodes based on the selected language
-  let displayShortCodeList = [];
-  if (selectedLangue === "arabic") {
-    displayShortCodeList = [
-      ...globalShortCodesAr,
-      ...filteredShortCodeList.filter((code) => code.langue === "arabic"),
-    ];
-  } else if (selectedLangue === "french") {
-    displayShortCodeList = [
-      ...globalShortCodesFr,
-      ...filteredShortCodeList.filter((code) => code.langue === "french"),
-    ];
-  } else {
-    displayShortCodeList = [
-      ...globalShortCodesAr,
-      ...globalShortCodesFr,
-      ...filteredShortCodeList,
-    ];
-  }
-
-  const onChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
+  // Handlers
+  
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { id, value } = e.target;
     setTemplateBody((prevState) => ({
       ...prevState,
-      [e.target.id]: e.target.value,
+      [id]: value,
+    }));
+};
+
+// const handleBodyChange = (event:any, editor:any) => {
+//   const data = editor.getData();
+
+//   const tableMatches = data.match(/<table>/gi) || [];
+//   const numberOfTables = tableMatches.length;
+
+//   setTemplateBody((prevState) => ({
+//     ...prevState,
+//     body: data,
+//     isArray: numberOfTables > 0 ? "1" : "0",
+//     arraysNumber: numberOfTables.toString(),
+//   }));
+// };
+
+const config = {
+  readonly: false,
+  height: 652,
+  width: 595,
+  toolbarAdaptive: false,
+  toolbarSticky: false,
+  buttons: [
+    'source', '|',
+    'bold', 'italic', 'underline', 'strikethrough', '|',
+    'superscript', 'subscript', '|',
+    'ul', 'ol', '|',
+    'outdent', 'indent', '|',
+    'font', 'fontsize', 'brush', 'paragraph', '|',
+    'table', 'link', '|',
+    'align', '|',
+    'undo', 'redo', '|',
+    'hr', 'eraser', 'fullsize'
+  ],
+  controls: {
+    font: {
+      list: {
+        'Arial': 'Arial, Helvetica, sans-serif',
+        'Times New Roman': 'Times New Roman, serif',
+        'Courier New': 'Courier New, Courier, monospace',
+        'Georgia': 'Georgia, serif',
+        'Tahoma': 'Tahoma, Geneva, sans-serif',
+        'Verdana': 'Verdana, Geneva, sans-serif',
+      },
+    },
+  },
+};
+
+const handleBodyChange = (newContent: any) => {
+  const tableMatches = newContent.match(/<table>/gi) || [];
+  const numberOfTables = tableMatches.length;
+
+  setTemplateBody((prevState) => ({
+    ...prevState,
+    body: newContent,
+    isArray: numberOfTables > 0 ? "1" : "0",
+    arraysNumber: numberOfTables.toString(),
+  }));
+};
+
+  const handleShortCodeInsertion = (code: string) => {
+    setTemplateBody((prevState) => ({
+      ...prevState,
+      body: `${prevState.body}${code}`,
     }));
   };
 
-  const onChangeLanguage = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setTemplateBody((prevState) => ({
-      ...prevState,
-      langue: e.target.value,
-    }));
-    setSelectedLangue(e.target.value);
-  };
-
-  const onChangeIntendedFor = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setTemplateBody((prevState) => ({
-      ...prevState,
-      intended_for: e.target.value,
-    }));
-    setSelectedIntendedFor(e.target.value);
-  };
-
-  const onBodyChange = (event: any, editor: any) => {
-    const data = editor.getData();
-    setTemplateBody((prevState) => ({
-      ...prevState,
-      body: data,
-    }));
-  };
-
-  // Handle Shortcode Insertion
-  const onShortCodeButtonClick = (code: string) => {
-    setTemplateBody((prevState) => ({
-      ...prevState,
-      body: prevState.body + code, // Append shortcode to body
-    }));
-  };
-
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    newTemplateBody(templateBody).then(() =>
-      setTemplateBody(initialTemplateBody)
-    );
-    notify();
-    navigate("/template/liste-template-body");
+    try {
+      await addNewTemplateBody(templateBody).unwrap();
+      Swal.fire({
+        position: "center",
+        icon: "success",
+        title: "Le corps du modèle a été créé avec succès.",
+        showConfirmButton: false,
+        timer: 2000,
+      });
+      navigate("/template/liste-template-body");
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Erreur",
+        text: "Une erreur est survenue lors de la création du corps du modèle.",
+      });
+    } finally {
+      setTemplateBody(initialTemplateBody);
+    }
   };
 
-  const notify = () => {
-    Swal.fire({
-      position: "center",
-      icon: "success",
-      title: "Template Body has been created successfully",
-      showConfirmButton: false,
-      timer: 2000,
-    });
-  };
+  const handleNextStep = () => setStep((prevStep) => prevStep + 1);
 
-  const handleNext = () => setStep((prevStep) => prevStep + 1);
-  // const handlePrevious = () => setStep((prevStep) => prevStep - 1);
-
-  const handlePrevious = () => {
-    if (body.trim() !== "") {
+  const handlePreviousStep = () => {
+    if (body.trim()) {
       Swal.fire({
         title: "Êtes-vous sûr ?",
-        text: "Tout le texte écrit dans le corps sera perdu si vous continuez !",
+        text: "Le texte écrit dans le corps sera perdu si vous continuez !",
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#3085d6",
@@ -428,10 +200,6 @@ const NewTemplateBody = () => {
         cancelButtonText: "Non, rester ici",
       }).then((result) => {
         if (result.isConfirmed) {
-          setTemplateBody((prevState) => ({
-            ...prevState,
-            body: "", // Optionally clear the body
-          }));
           setStep((prevStep) => prevStep - 1);
         }
       });
@@ -440,172 +208,156 @@ const NewTemplateBody = () => {
     }
   };
 
+  const handleKeyDown = (event:any, editor:any) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault(); // Prevent the default behavior of the Enter key
+      editor.model.change((writer:any) => {
+        const position = editor.model.document.selection.getFirstPosition();
+        writer.insertElement("softBreak", position); // Insert a line break
+      });
+    }
+  };
+  const editor = useRef(null);
+
+  // const config = {
+  //   readonly: false, // Allow editing
+  //   height: 842, // Approximate A4 height in pixels
+  //   width: 595,  // Approximate A4 width in pixels
+  //   toolbarAdaptive: false, // Ensures the toolbar shows all items
+  //   toolbarSticky: false, // Keeps the toolbar at the top
+  //   buttons: [
+  //     'source', '|',
+  //     'bold', 'italic', 'underline', 'strikethrough', '|',
+  //     'superscript', 'subscript', '|',
+  //     'ul', 'ol', '|',
+  //     'outdent', 'indent', '|',
+  //     'font', 'fontsize', 'brush', 'paragraph', '|',
+  //     'table', 'link', '|',
+  //     'align', '|',
+  //     'undo', 'redo', '|',
+  //     'hr', 'eraser', 'fullsize'
+  //   ]
+  // };
+
   return (
-    <React.Fragment>
-      <div className="page-content">
-        <Container fluid={true}>
-          <Row>
-            <Col lg={12}>
-              <Card>
-                <Card.Body>
-                  <Card.Header>
-                    <div className="d-flex">
-                      <div className="flex-shrink-0 me-3">
-                        <div className="avatar-sm">
-                          <div className="avatar-title rounded-circle bg-light text-primary fs-20">
-                            <i className="bi bi-person-lines-fill"></i>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex-grow-1">
-                        <h5 className="card-title">Nouveau Corps du Modèle</h5>
-                      </div>
+    <Container fluid className="page-content">
+      <Row>
+        <Col lg={12}>
+          <Card>
+            <Card.Header className="d-flex align-items-center">
+              <div className="flex-shrink-0 me-3 avatar-sm">
+                <div className="avatar-title rounded-circle bg-light text-primary fs-20">
+                  <i className="bi bi-person-lines-fill"></i>
+                </div>
+              </div>
+              <h5 className="card-title mb-0">Nouveau Corps du Modèle</h5>
+            </Card.Header>
+
+            <Card.Body>
+              <Form onSubmit={handleFormSubmit}>
+                {step === 1 && (
+                  <>
+                    <Row>
+                      <Col lg={4}>
+                        <Form.Group controlId="langue">
+                          <Form.Label>Langue du document</Form.Label>
+                          <Form.Select
+                            value={langue}
+                            onChange={onChangeLanguage}
+                            className="text-muted"
+                          >
+                            <option value="">Sélectionner Langue</option>
+                            <option value="arabic">Arabe</option>
+                            <option value="french">Français</option>
+                          </Form.Select>
+                        </Form.Group>
+                      </Col>
+                      <Col lg={4}>
+                        <Form.Group controlId="intended_for">
+                          <Form.Label>Destiné aux</Form.Label>
+                          <Form.Select
+                            value={intended_for}
+                            onChange={onChangeIntendedFor}
+                            className="text-muted"
+                          >
+                            <option value="">Sélectionner</option>
+                            <option value="enseignant">Enseignants</option>
+                            <option value="etudiant">Étudiants</option>
+                            <option value="personnel">Personnels</option>
+                          </Form.Select>
+                        </Form.Group>
+                      </Col>
+                    </Row>
+                    <div className="d-flex justify-content-end mt-3">
+                      <Button variant="primary" onClick={handleNextStep}>
+                        Suivant
+                      </Button>
                     </div>
-                  </Card.Header>
+                  </>
+                )}
 
-                  <Card.Body></Card.Body>
+                {step === 2 && (
+                  <>
+                    <Row>
+                      <Col lg={12}>
+                        <Form.Group controlId="title">
+                          <Form.Label>Titre</Form.Label>
+                          <Form.Control
+                            type="text"
+                            placeholder="Entrer titre"
+                            value={title}
+                            onChange={handleChange}
+                          />
+                        </Form.Group>
+                      </Col>
+                    </Row>
 
-
-<div className="mb-3">
-                  <Form onSubmit={onSubmit}>
-                    {step === 1 && (
-                      <>
-                        <Row>
-                          <Col lg={4}>
-                            <div className="mb-3">
-                              <Form.Label htmlFor="langue">Langue du document</Form.Label>
-                              <select
-                                className="form-select text-muted"
-                                name="langue"
-                                id="langue"
-                                value={langue}
-                                onChange={onChangeLanguage}
-                              >
-                                <option value="">Sélectionner Langue</option>
-                                <option value="arabic">Arabe</option>
-                                <option value="french">Français</option>
-                              </select>
-                            </div>
-                          </Col>
-                          <Col lg={4}>
-                            <div className="mb-3">
-                              <Form.Label htmlFor="intended_for">
-                                Destiné aux
-                              </Form.Label>
-                              <select
-                                className="form-select text-muted"
-                                name="intended_for"
-                                id="intended_for"
-                                value={intended_for}
-                                onChange={onChangeIntendedFor}
-                              >
-                                <option value="">Sélectionner</option>
-                                <option value="enseignant">Enseignants</option>
-                                <option value="etudiant">Étudiants</option>
-                                <option value="personnel">Personnels</option>
-                              </select>
-                            </div>
-                          </Col>
-                        </Row>
-                        <div className="d-flex justify-content-end">
-                          <Button variant="primary" onClick={handleNext}>
-                            Suivant
-                          </Button>
+                    <Row className="mt-4">
+                      <Col lg={12}>
+                        <Form.Label>Corps</Form.Label>
+                        <div className="mb-3">
+                          {displayShortCodeList.map((code) => (
+                            <Button
+                              key={code._id}
+                              variant="secondary"
+                              size="sm"
+                              onClick={() => handleShortCodeInsertion(code.body)}
+                              className="me-2 mb-2"
+                            >
+                              {code.titre}
+                            </Button>
+                          ))}
                         </div>
-                      </>
-                    )}
+                        <div className="center">
+                        
+ <JoditEditor
+                          ref={editor}
+                          value={body}
+                          config={config}
+                          onBlur={(newContent) => handleBodyChange(newContent)}
+                        />
+</div>
+                      </Col>
+                    </Row>
 
-                    {step === 2 && (
-                      <>
-                        <Row>
-                          <Col lg={12}>
-                            <div className="mb-3">
-                              <Form.Label htmlFor="title">
-                                <h4 className="card-title mb-0">Titre</h4>
-                              </Form.Label>
-                              <Form.Control
-                                type="text"
-                                id="title"
-                                name="title"
-                                placeholder="Entrer titre"
-                                value={title}
-                                onChange={onChange}
-                              />
-                            </div>
-                          </Col>
-                        </Row>
+                    <div className="d-flex justify-content-between mt-3">
+                      <Button variant="secondary" onClick={handlePreviousStep}>
+                        Précédent
+                      </Button>
+                      <Button variant="primary" type="submit" disabled={isLoading}>
+                        {isLoading ? <Spinner as="span" animation="border" size="sm" /> : "Ajouter Corps"}
+                      </Button>
+                    </div>
+                  </>
+                )}
+              </Form>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
 
-                        <Row>
-                          <Col lg={12}>
-                            <Form.Label htmlFor="body" className="form-label">
-                              Corps
-                            </Form.Label>
-
-                            {/* Shortcode Buttons */}
-                            <div className="mb-3">
-                              {displayShortCodeList.map((code, index) => (
-                                <Button
-                                  key={code._id}
-                                  variant="secondary"
-                                  size="sm"
-                                  onClick={() => onShortCodeButtonClick(code.body)}
-                                  className="me-2 mb-2"
-                                >
-                                  {code.titre}
-                                </Button>
-                              ))}
-                            </div>
-
-                            {/* CKEditor with body */}
-                            <CKEditor
-                              editor={ClassicEditor}
-                              data={body}
-                              onChange={onBodyChange}
-                              config={{
-                                toolbar: [
-                                  "heading",
-                                  "|",
-                                  "bold",
-                                  "italic",
-                                  "link",
-                                  "bulletedList",
-                                  "numberedList",
-                                  "|",
-                                  "undo",
-                                  "redo",
-                                ],
-                                fontFamily: {
-                                  options: ["default", "Times New Roman"],
-                                },
-                                fontSize: {
-                                  options: [12, 14, 16],
-                                  default: 12,
-                                },
-                              }}
-                            />
-                          </Col>
-                        </Row>
-
-                        <div className="d-flex justify-content-between">
-                          <Button variant="secondary" onClick={handlePrevious}>
-                            Précédent
-                          </Button>
-                          <Button variant="primary" type="submit">
-                            Ajouter Corps
-                          </Button>
-                        </div>
-                      </>
-                    )}
-                  </Form>
-                  </div>
-                
-                </Card.Body>
-              </Card>
-            </Col>
-          </Row>
-        </Container>
-      </div>
-    </React.Fragment>
+    
+    </Container>
   );
 };
 

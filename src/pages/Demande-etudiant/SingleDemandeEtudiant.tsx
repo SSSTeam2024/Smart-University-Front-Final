@@ -1,36 +1,28 @@
-import React, { useEffect, useState } from "react";
+import React, { useRef, useState } from "react";
 import { Button, Card, Col, Container, Row } from "react-bootstrap";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import Breadcrumb from "Common/BreadCrumb";
-import { Page, View, Document, StyleSheet, Font, Image, Text } from "@react-pdf/renderer";
-import { PDFDownloadLink } from "@react-pdf/renderer";
+import { jsPDF } from "jspdf";
+import html2canvas from "html2canvas";
 
 // Import images
-
 import img4 from "assets/images/small/img-4.jpg";
-
-import avatar1 from "assets/images/users/avatar-1.jpg";
 import student from "assets/images/etudiant.png";
 import file from "assets/images/demande.png";
-import HeaderPDF from "Common/HeaderPDF";
+import createPDFHeader from "Common/HeaderPDF"; // Corrected import
 import FooterPDF from "Common/FooterPDF";
 import TitlePDF from "Common/TitlePDF";
 import BodyPDF from "Common/BodyPDF";
 import SignaturePDF from "Common/SignaturePDF";
-
+import { getTitleText } from "Common/TitlePDF";
 import { useFetchVaribaleGlobaleQuery } from "features/variableGlobale/variableGlobaleSlice";
 import ArFooterPDF from "Common/ArFooterPDF";
 import ArSignaturePDF from "Common/ArSignaturePDF";
 
-Font.register({
-  family: "Amiri",
-  src: "/assets/fonts/Amiri-Regular.ttf",
-});
-
-const styles = StyleSheet.create({
+const styles = {
   body: {
     backgroundColor: "#ffffff",
-    fontFamiy: "Source Sans",
+    fontFamily: "Source Sans",
     fontSize: 12,
     lineHeight: 1.4,
     paddingTop: 32,
@@ -38,138 +30,93 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
     height: "100vh",
   },
-  top: {
-    flex: 1,
-  },
-  page: {
-    fontFamily: "Amiri",
-  },
   logo: {
-    width: 100,  // Set the width to a small value
-    height: 50,  // Set the height to a small value
-    resizeMode: 'contain', // Maintain aspect ratio
-    alignSelf: 'center', // Center the image horizontally
-    marginTop: 10, // Add some space at the top
+    width: 100,
+    height: 50,
+    resizeMode: "contain",
+    alignSelf: "center",
+    marginTop: 10,
   },
-});
+};
 
+const SingleDemandeEtudiant = (props: any) => {
+  document.title = "Demande Etudiant | Smart University";
 
-
-const PDF_REPORT = (props: any) => {
-
-
+  const state = useLocation();
+  const navigate = useNavigate();
+  const { data: AllVariablesGlobales = [] } = useFetchVaribaleGlobaleQuery();
+  const bodyRef = useRef(null);
+  const [isGenerating, setIsGenerating] = useState(false);
   const {
-    address_fr,
-    phone,
-    fax,
-    website,
-    formattedDate,
     piece_demande,
     studentId,
     enseignantId,
     personnelId,
-    signature_directeur,
-    langue,
-    address_ar,
-    gouvernorat_ar,
-    gouvernorat_fr,
-    code_postal,
     allVariables,
     raison,
+    formattedDate,
     departement,
-    logo_etablissement,
-    logo_universite,
-    logo_republique,
-   
   } = props;
 
- 
+  const generatePDF = async () => {
+    try {
+      setIsGenerating(true);
+      if (!bodyRef.current) {
+        console.error("bodyRef is not set.");
+        setIsGenerating(false);
+        return;
+      }
 
-  return (
-    <Document>
-      <Page size="A4" style={[styles.body, styles.page]} wrap>
-        <View>
-        <HeaderPDF
-          logo_etablissement={logo_etablissement}
-          logo_republique={logo_republique}
-          logo_universite={logo_universite}
-        />
-        </View>
-  
-        <TitlePDF piece_demande={piece_demande} /> 
-        <View style={{ flex: 2 }}>
-          <BodyPDF
-            piece_demande={piece_demande}
-            studentId={studentId}
-            enseignantId= {enseignantId}
-            personnelId={personnelId}
-            allVariables={allVariables}
-            raison={raison}
-            formattedDate={formattedDate}
-            departement= {departement}
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
-          />
-        </View>
-        <View>
-          {langue === "french" ? (
-            <SignaturePDF
-              formattedDate={formattedDate}
-              signature_directeur={signature_directeur}
-              gouvernorat_fr={gouvernorat_fr}
-            />
-          ) : (
-            <ArSignaturePDF
-              formattedDate={formattedDate}
-              signature_directeur={signature_directeur}
-              gouvernorat_ar={gouvernorat_ar}
-            />
-          )}
-        </View>
-        <View fixed>
-          {langue === "french" ? (
-            <FooterPDF
-              address_fr={address_fr}
-              code={code_postal}
-              phone={phone}
-              fax={fax}
-              website={website}
-            />
-          ) : (
-            <ArFooterPDF
-              address_ar={address_ar}
-              code={code_postal}
-              phone={phone}
-              fax={fax}
-              website={website}
-            />
-          )}
-        </View>
-      </Page>
-    </Document>
-  );
-};
+      const canvas = await html2canvas(bodyRef.current, {
+        useCORS: true,
+        allowTaint: true,
+      });
+      const imgData = canvas.toDataURL("image/png");
 
-const SingleDemandeEtudiant = () => {
+      if (!imgData || !imgData.startsWith("data:image/png;base64,")) {
+        throw new Error("Captured image data is not valid.");
+      }
 
-  document.title = "Demande Etudiant | Smart University";
+      const doc = new jsPDF();
+      const pdfWidth = doc.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
-  const state = useLocation();
-  console.log("state",state)
-  const navigate = useNavigate();
- 
-  const { data: AllVariablesGlobales = [] } = useFetchVaribaleGlobaleQuery();
-  console.log("allvariables",AllVariablesGlobales)
-  const currentDate = new Date();
-  const day = String(currentDate.getDate()).padStart(2, "0");
-  const month = String(currentDate.getMonth() + 1).padStart(2, "0"); // Months are zero-based
-  const year = currentDate.getFullYear();
-
-  const formattedDate = `${day}/${month}/${year}`;
+      doc.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+      doc.save("document.pdf");
+    } catch (error) {
+      console.error("Error generating PDF: ", error);
+    }finally {
+      setIsGenerating(false);
+    }
+  };
 
   return (
     <React.Fragment>
       <div className="page-content">
         <Container fluid={true}>
+          <div
+             style={{
+              visibility: "hidden", // Hide it but keep it rendered on the page
+              position: "absolute",
+              pointerEvents: "none", // Prevent interactions
+            }}
+            ref={bodyRef}
+          >
+            <BodyPDF
+              piece_demande={state.state?.title}
+              studentId={state.state?.studentId._id}
+              enseignantId={state.state?.enseignantId}
+              personnelId={state.state?.personnelId}
+              raison={state.state?.raison}
+              formattedDate={new Date(
+                state.state?.createdAt
+              ).toLocaleDateString("fr-FR")}
+              departement={state.state?.departement}
+              allVariables={allVariables}
+            />
+          </div>
           <Breadcrumb
             title="Demande Etudiant"
             pageTitle="Details de la Demande"
@@ -189,9 +136,10 @@ const SingleDemandeEtudiant = () => {
                     <Card.Body>
                       <div className="mt-n5">
                         <img
-                  src={`http://localhost:5000/files/etudiantFiles/PhotoProfil/${state.state?.studentId.photo_profil}`}
-                  alt=""
-                          className="rounded-circle p-1 bg-body mt-n5" width="150"
+                          src={`http://localhost:5000/files/etudiantFiles/PhotoProfil/${state.state?.studentId.photo_profil}`}
+                          alt=""
+                          className="rounded-circle p-1 bg-body mt-n5"
+                          width="150"
                         />
                       </div>
                     </Card.Body>
@@ -205,21 +153,20 @@ const SingleDemandeEtudiant = () => {
               <Card className="categrory-widgets overflow-hidden">
                 <div className="card-header d-flex align-items-center">
                   <h5 className="card-title flex-grow-1 mb-0">
-                    Détails de l'étudiant{" "}
-                    {/* <i className="bi bi-mortarboard-fill"></i> */}
+                    Détails de l'étudiant
                   </h5>
                   <div className="flex-shrink-0">
                     <Button
-                    onClick={() =>
-                      navigate(`/gestion-etudiant/compte-etudiant`, {
-                        state: { _id: state.state?.studentId._id },
-                      })
-                    }
+                      onClick={() =>
+                        navigate(`/gestion-etudiant/compte-etudiant`, {
+                          state: { _id: state.state?.studentId._id },
+                        })
+                      }
                       type="button"
                       className="btn btn-info btn-label m-1"
                     >
                       <i className="bi bi-eye label-icon align-middle fs-16 me-2"></i>
-                      Voir étudiant{" "}
+                      Voir étudiant
                     </Button>
                   </div>
                 </div>
@@ -234,7 +181,8 @@ const SingleDemandeEtudiant = () => {
                           <td className="fs-5">Nom et Prénom:</td>
                           <td>
                             <span className="mb-1 fs-5">
-                            {state.state?.studentId.nom_fr!}  {state.state?.studentId.prenom_fr!}
+                              {state.state?.studentId.nom_fr}{" "}
+                              {state.state?.studentId.prenom_fr}
                             </span>
                           </td>
                         </tr>
@@ -242,7 +190,7 @@ const SingleDemandeEtudiant = () => {
                           <td className="fs-5">CIN:</td>
                           <td>
                             <span className="mb-1 fs-5">
-                            {state.state?.studentId.num_CIN!}
+                              {state.state?.studentId.num_CIN}
                             </span>
                           </td>
                         </tr>
@@ -250,7 +198,10 @@ const SingleDemandeEtudiant = () => {
                           <td className="fs-5">Classe:</td>
                           <td>
                             <span className="mb-1 fs-5">
-                              {state.state?.studentId.groupe_classe.nom_classe_fr}
+                              {
+                                state.state?.studentId.groupe_classe
+                                  .nom_classe_fr
+                              }
                             </span>
                           </td>
                         </tr>
@@ -258,7 +209,7 @@ const SingleDemandeEtudiant = () => {
                           <td className="fs-5">Téléphone</td>
                           <td>
                             <span className="mb-1 fs-5">
-                            {state.state?.studentId.num_phone!}
+                              {state.state?.studentId.num_phone}
                             </span>
                           </td>
                         </tr>
@@ -280,61 +231,20 @@ const SingleDemandeEtudiant = () => {
                     Détails de la demande
                   </h5>
                   <div className="flex-shrink-0">
-                    {AllVariablesGlobales?.length > 0 ? (
-                      <PDFDownloadLink
-                        document={
-                          <PDF_REPORT
-                              logo_etablissement={
-                              AllVariablesGlobales[2]?.logo_etablissement!
-                            }
-                            logo_republique={
-                              AllVariablesGlobales[2]?.logo_republique!
-                            }
-                            logo_universite={
-                              AllVariablesGlobales[2]?.logo_universite!
-                            }
-                            address_fr={AllVariablesGlobales[2]?.address_fr!}
-                            phone={AllVariablesGlobales[2]?.phone!}
-                            fax={AllVariablesGlobales[2]?.fax!}
-                            website={AllVariablesGlobales[2]?.website!}
-                            formattedDate={formattedDate}
-                            piece_demande={state?.state?.piece_demande!}
-                            studentId={state?.state?.studentId!}
-                           
-                            signature_directeur={
-                              AllVariablesGlobales[2]?.signature_directeur!
-                            }
-                            langue={state?.state?.langue!}
-                            address_ar={AllVariablesGlobales[2]?.address_ar!}
-                            gouvernorat_ar={
-                              AllVariablesGlobales[2]?.gouvernorat_ar!
-                            }
-                            gouvernorat_fr={
-                              AllVariablesGlobales[2]?.gouvernorat_fr!
-                            }
-                            code_postal={AllVariablesGlobales[2]?.code_postal!}
-                            allVariables={AllVariablesGlobales[2]}
-                            raison={state?.state?.description!}
-                            departement={state?.state?.studentId?.groupe_classe?.departement!}
-                          />
-                      
-                        }
-                        fileName={state?.state?.piece_demande?.title!}
-                      >
-                        <Button
-                          type="button"
-                          className="btn btn-primary btn-label m-1"
-                        >
-                          <i className="bi bi-file-earmark-arrow-down label-icon align-middle fs-16 me-2"></i>
-                          Générer
-                        </Button>
-                      </PDFDownloadLink>
-                    ) : (
-                      <div>No data available</div>
-                    )}
+                  <Link
+                  to="/demandes-etudiant/generer-demande-etudiant"
+        // onClick={()=>navigate("")}
+        // type="button"
+        state={state.state}
+        className="btn btn-danger btn-label m-1"
+        
+      >
+        <i className="bi bi-file-earmark-pdf label-icon align-middle fs-16 me-2"></i>
+        Generer
+      </Link>
                     <Button type="button" className="btn btn-success btn-label">
-                      <i className="bi bi-postcard label-icon align-middle fs-16 me-2"></i>{" "}
-                      Notifier l'étudiant'
+                      <i className="bi bi-postcard label-icon align-middle fs-16 me-2"></i>
+                      Notifier l'étudiant
                     </Button>
                   </div>
                 </div>
@@ -349,37 +259,33 @@ const SingleDemandeEtudiant = () => {
                           <td className="fs-5">Pièce demandée:</td>
                           <td>
                             <span className="mb-1 fs-5">
-                              {state.state?.title!}
+                              {state.state?.title}
                             </span>
                           </td>
                         </tr>
                         <tr>
-                          <td className="fs-5">Langue:</td>
+                          <td className="fs-5">Description:</td>
                           <td>
-                            {state.state?.langue! === "frech" ? (
-                              <span className="badge bg-info-subtle text-info">
-                                Français
-                              </span>
-                            ) : (
-                              <span className="badge bg-primary-subtle text-primary">
-                                Arabe
-                              </span>
-                            )}
-                          </td>
-                        </tr>
-                        <tr>
-                          <td className="fs-5">Nombre de copie:</td>
-                          <td>
-                            <span className="badge bg-secondary-subtle text-secondary">
-                              {state.state?.nombre_copie!}
+                            <span className="mb-1 fs-5">
+                              {state.state?.description}
                             </span>
                           </td>
                         </tr>
                         <tr>
-                          <td className="fs-5">Etat de la demande:</td>
+                          <td className="fs-5">Status:</td>
                           <td>
-                            <span className="badge bg-danger-subtle text-danger">
-                              {state.state?.status!}
+                            <span className="mb-1 fs-5">
+                              {state.state?.status}
+                            </span>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className="fs-5">Date d'envoi:</td>
+                          <td>
+                            <span className="mb-1 fs-5">
+                              {new Date(
+                                state.state?.createdAt
+                              ).toLocaleDateString("fr-FR")}
                             </span>
                           </td>
                         </tr>
@@ -395,15 +301,6 @@ const SingleDemandeEtudiant = () => {
               </Card>
             </Col>
           </Row>
-          {/* <Row>
-            <Col lg={12}>
-              <div className="hstack gap-2 justify-content-end">
-                <Button variant="primary" id="add-btn" type="submit">
-                  Modifer la Demande
-                </Button>
-              </div>
-            </Col>
-          </Row> */}
         </Container>
       </div>
     </React.Fragment>

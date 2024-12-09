@@ -36,23 +36,6 @@ const ListePapierAdministratifs = () => {
   const { data = [] } = useFetchPapierAdministratifQuery();
   console.log(data)
   const [deletePapierAdministratif] = useDeletePapierAdministratifMutation();
-//   const filteredPapierAdministratifs = useMemo(() => {
-//     let result = data;
-
-//     // Filter by search query
-//     if (searchQuery) {
-//       result = result.filter((papier) =>
-//         [
-//             papier.name_ar,
-//             papier.nom_fr,
-          
-//         ].some((value) => value && value.toLowerCase().includes(searchQuery))
-//       );
-//     }
-
-//     return result;
-//   }, [data, searchQuery]);
-
 
   const swalWithBootstrapButtons = Swal.mixin({
     customClass: {
@@ -116,31 +99,6 @@ const ListePapierAdministratifs = () => {
   const columns = useMemo(
     () => [
       {
-        Header: (
-          <div className="form-check">
-            <input
-              className="form-check-input"
-              type="checkbox"
-              id="checkAll"
-              value="option"
-            />
-          </div>
-        ),
-        Cell: (cellProps: any) => {
-          return (
-            <div className="form-check">
-              <input
-                className="form-check-input"
-                type="checkbox"
-                name="chk_child"
-                defaultValue="option1"
-              />
-            </div>
-          );
-        },
-        id: "#",
-      },
-      {
         Header: "Nom (AR)",
         accessor: "nom_ar",
         disableFilters: true,
@@ -170,12 +128,12 @@ const ListePapierAdministratifs = () => {
         Header: "Action",
         disableFilters: true,
         filterable: true,
-        accessor: (papierAdministratif: any) => {
+        accessor: (papierAdministratif: PapierAdministratif) => {
           return (
             <ul className="hstack gap-2 list-unstyled mb-0">
               <li>
                 <Link
-                  to="/parametre/edit-type-inscription-etudiant"
+                  to="/editPapierAdministratif"
                   state={papierAdministratif}
                   className="badge bg-primary-subtle text-primary edit-item-btn"
                 >

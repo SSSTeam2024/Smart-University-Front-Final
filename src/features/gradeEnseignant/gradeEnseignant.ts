@@ -2,14 +2,52 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export interface GradeEnseignant {
   _id: string;
-  value_grade_enseignant: string;
+  //value_grade_enseignant: string;
   grade_fr: string;
   grade_ar: string;
+  charge_horaire: {
+    annualMinHE: string;
+    annualMaxHE: string;
+
+    s1MinHE: string;
+    s1MaxHE: string;
+
+    s2MinHE: string;
+    s2MaxHE: string;
+
+    annualMinHS: string;
+    annualMaxHS: string;
+
+    s1MinHS: string;
+    s1MaxHS: string;
+
+    s2MinHS: string;
+    s2MaxHS: string;
+
+    annualMinHX: string;
+    annualMaxHX: string;
+
+    s1MinHX: string;
+    s1MaxHX: string;
+
+    s2MinHX: string;
+    s2MaxHX: string;
+
+    totalAnnualMin: string;
+    totalAnnualMax: string;
+
+    totalS1Min: string;
+    totalS1Max: string;
+
+    totalS2Min: string;
+    totalS2Max: string;
+  };
 }
+
 export const gradeEnseignantSlice = createApi({
   reducerPath: "GradeEnseignant",
   baseQuery: fetchBaseQuery({
-    baseUrl: `${process.env.REACT_APP_API_URL}/grade-enseignant/`,
+    baseUrl: "http://localhost:5000/api/grade-enseignant/",
   }),
   tagTypes: ["GradeEnseignant"],
   endpoints(builder) {
@@ -51,8 +89,8 @@ export const gradeEnseignantSlice = createApi({
 });
 
 export const {
-useAddGradeEnseignantMutation,
-useDeleteGradeEnseignantMutation,
-useFetchGradesEnseignantQuery,
-useUpdateGradeEnseignantMutation
+  useAddGradeEnseignantMutation,
+  useDeleteGradeEnseignantMutation,
+  useFetchGradesEnseignantQuery,
+  useUpdateGradeEnseignantMutation,
 } = gradeEnseignantSlice;

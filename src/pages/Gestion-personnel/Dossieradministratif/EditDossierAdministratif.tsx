@@ -3,16 +3,9 @@ import { Button, Col, Container, Form, Row } from "react-bootstrap";
 import { useLocation, useNavigate } from "react-router-dom";
 import "flatpickr/dist/flatpickr.min.css";
 import Swal from "sweetalert2";
-import {
-  Enseignant,
-  useFetchEnseignantsQuery,
-} from "features/enseignant/enseignantSlice";
 import Flatpickr from "react-flatpickr";
 import { format } from "date-fns";
-import {
-  useAddDossierAdministratifMutation,
-  useUpdateDossierAdministratifMutation,
-} from "features/dossierAdministratif/dossierAdministratif";
+import { useUpdateDossierAdministratifMutation } from "features/dossierAdministratif/dossierAdministratif";
 import { useFetchPapierAdministratifQuery } from "features/papierAdministratif/papierAdministratif";
 import { useFetchPersonnelsQuery } from "features/personnel/personnelSlice";
 
@@ -42,6 +35,7 @@ export interface DossierAdministratif {
     prenom_fr: string;
     prenom_ar: string;
   };
+  isArchive?: boolean;
 }
 
 const EditDossierAdministratifPersonnels = () => {
@@ -81,11 +75,7 @@ const EditDossierAdministratifPersonnels = () => {
           prenom_fr: dossierAdministratif.personnel.prenom_fr || "",
           prenom_ar: dossierAdministratif.personnel.prenom_ar || "",
         },
-        papers: dossierAdministratif.papers.map((paper: any) => ({
-          ...paper,
-          FileBase64String: "", // Initialize with empty string
-          FileExtension: "",    // Initialize with empty string
-        })) || [],
+        papers: dossierAdministratif.papers || [],
       });
     }
   }, [dossierAdministratif]);
@@ -98,9 +88,40 @@ const EditDossierAdministratifPersonnels = () => {
     );
   };
 
-  // Get filtered papers based on the selected category
   const filteredPapers = filterByCategory(selectedCategory);
 
+  // const handlePapierChange = (
+  //   event: React.ChangeEvent<HTMLSelectElement>,
+  //   index: number
+  // ) => {
+  //   const selectedNomFr = event.target.value;
+  //   const selectedPaper = filteredPapers.find(
+  //     (paper) => paper.nom_fr === selectedNomFr
+  //   );
+  //   if (selectedPaper) {
+  //     const updatedPapier: PapierAdministratif = {
+  //       _id: selectedPaper._id,
+  //       nom_ar: selectedPaper.nom_ar,
+  //       nom_fr: selectedPaper.nom_fr,
+  //       category: selectedPaper.category,
+  //     };
+
+  //     setFormData((prevData) => ({
+  //       ...prevData,
+  //       papers: prevData.papers.map((paper, i) =>
+  //         i === index
+  //           ? {
+  //               ...paper,
+  //               papier_administratif: updatedPapier,
+  //               file: selectedPaper.nom_fr || "",
+  //               FileBase64String: "",
+  //               FileExtension: "",
+  //             }
+  //           : paper
+  //       ),
+  //     }));
+  //   }
+  // };
   const handlePapierChange = (
     event: React.ChangeEvent<HTMLSelectElement>,
     index: number
@@ -109,10 +130,7 @@ const EditDossierAdministratifPersonnels = () => {
     const selectedPaper = filteredPapers.find(
       (paper) => paper.nom_fr === selectedNomFr
     );
-
-    // Update the formData with the selected paper's details
     if (selectedPaper) {
-      // Create a complete PapierAdministratif object
       const updatedPapier: PapierAdministratif = {
         _id: selectedPaper._id,
         nom_ar: selectedPaper.nom_ar,
@@ -136,19 +154,15 @@ const EditDossierAdministratifPersonnels = () => {
       }));
     }
   };
-
   const handlePersonnelChange = (
     event: React.ChangeEvent<HTMLSelectElement>
   ) => {
     const selectedPersonnelId = event.target.value;
-    console.log("Selected Personnel ID:", selectedPersonnelId);
     const doesSelectedPersonnelExist = allPersonnels.some(
       (personnel) =>
         personnel._id.trim().toLowerCase() ===
         selectedPersonnelId.trim().toLowerCase()
     );
-    console.log("Does Selected Personnel Exist:", doesSelectedPersonnelExist);
-    console.log("All Personnels:", allPersonnels);
     allPersonnels.forEach((personnel, index) => {
       console.log(`Personnel ${index}:`, personnel);
     });
@@ -163,7 +177,6 @@ const EditDossierAdministratifPersonnels = () => {
       prenom_fr: "",
       prenom_ar: "",
     };
-    console.log("Selected Personnel Object:", selectedPersonnel);
     setFormData((prevData) => {
       console.log("Previous Form Data:", prevData);
       return {
@@ -187,9 +200,77 @@ const EditDossierAdministratifPersonnels = () => {
     }
   };
 
-  function convertToBase64(
+  // function convertToBase64(
+  //   file: File
+  // ): Promise<{ base64Data: string; extension: string }> {
+  //   return new Promise((resolve, reject) => {
+  //     const fileReader = new FileReader();
+  //     fileReader.onload = () => {
+  //       const base64String = fileReader.result as string;
+  //       const [, base64Data] = base64String.split(",");
+  //       const extension = file.name.split(".").pop() ?? "";
+  //       resolve({ base64Data, extension });
+  //     };
+  //     fileReader.onerror = (error) => {
+  //       reject(error);
+  //     };
+  //     fileReader.readAsDataURL(file);
+  //   });
+  // }
+  // const handlePDFUpload = async (event: any, index: number) => {
+  //   const file = event.target.files?.[0];
+  //   if (file) {
+  //     try {
+  //       const { base64Data, extension } = await convertToBase64(file);
+
+  //       // Update formData to store the base64 string and extension separately
+  //       setFormData((prevData) => ({
+  //         ...prevData,
+  //         papers: prevData.papers.map((paper, i) =>
+  //           i === index
+  //             ? {
+  //                 ...paper,
+  //                 FileBase64String: base64Data, // Store the base64 data here
+  //                 FileExtension: extension, // Store the file extension here
+  //                 file: "", // Keep the file field empty until the server handles the upload
+  //               }
+  //             : paper
+  //         ),
+  //       }));
+  //     } catch (error) {
+  //       console.error("Error converting file to Base64:", error);
+  //     }
+  //   }
+  // };
+
+  // const handlePDFUpload = async (event: any, index: number) => {
+  //   const file = event.target.files?.[0];
+  //   if (file) {
+  //     try {
+  //       const { base64Data, extension } = await convertToBase64(file);
+
+  //       // Update formData to store the base64 string and extension
+  //       setFormData((prevData) => ({
+  //         ...prevData,
+  //         papers: prevData.papers.map((paper, i) =>
+  //           i === index
+  //             ? {
+  //                 ...paper,
+  //                 FileBase64String: base64Data, // New file base64
+  //                 FileExtension: extension,    // New file extension
+  //                 file: "",                    // Will be replaced by new file
+  //               }
+  //             : paper
+  //         ),
+  //       }));
+  //     } catch (error) {
+  //       console.error("Error converting file to Base64:", error);
+  //     }
+  //   }
+  // };
+  const convertToBase64 = (
     file: File
-  ): Promise<{ base64Data: string; extension: string }> {
+  ): Promise<{ base64Data: string; extension: string }> => {
     return new Promise((resolve, reject) => {
       const fileReader = new FileReader();
       fileReader.onload = () => {
@@ -203,23 +284,22 @@ const EditDossierAdministratifPersonnels = () => {
       };
       fileReader.readAsDataURL(file);
     });
-  }
+  };
+
   const handlePDFUpload = async (event: any, index: number) => {
     const file = event.target.files?.[0];
     if (file) {
       try {
         const { base64Data, extension } = await convertToBase64(file);
-  
-        // Update formData to store the base64 string and extension separately
         setFormData((prevData) => ({
           ...prevData,
           papers: prevData.papers.map((paper, i) =>
             i === index
               ? {
                   ...paper,
-                  FileBase64String: base64Data, // Store the base64 data here
-                  FileExtension: extension,     // Store the file extension here
-                  file: file.name,                     // Keep the file field empty until the server handles the upload
+                  FileBase64String: base64Data,
+                  FileExtension: extension,
+                  file: "", // Will be handled by the server
                 }
               : paper
           ),
@@ -229,7 +309,6 @@ const EditDossierAdministratifPersonnels = () => {
       }
     }
   };
-  
   const onChange = (e: any, index: number) => {
     setFormData((prevData) => ({
       ...prevData,
@@ -241,45 +320,6 @@ const EditDossierAdministratifPersonnels = () => {
 
   const isValidObjectId = (id: string) => /^[0-9a-fA-F]{24}$/.test(id);
 
-  // const onSubmitDossier = async (e: React.FormEvent<HTMLFormElement>) => {
-  //   e.preventDefault();
-  //   if (
-  //     !formData?.personnel?._id ||
-  //     !isValidObjectId(formData?.personnel?._id)
-  //   ) {
-  //     console.error("Personnel ID is missing or invalid.");
-  //     return;
-  //   }
-
-  //   const preparedData = {
-  //     dossierId: formData._id,
-  //     papers: formData.papers.map((paper) => ({
-  //       papier_administratif: paper.papier_administratif,
-  //       annee: paper.annee,
-  //       remarques: paper.remarques,
-  //       file: paper.file,
-  //       FileBase64String: paper.FileBase64String,
-  //       FileExtension: paper.FileExtension,
-  //     })),
-  //     personnel: {
-  //       _id: formData.personnel._id,
-  //       nom_fr: formData.personnel.nom_fr,
-  //       nom_ar: formData.personnel.nom_ar,
-  //       prenom_fr: formData.personnel.prenom_fr,
-  //       prenom_ar: formData.personnel.prenom_ar,
-  //     },
-  //   };
-
-  //   console.log(preparedData);
-
-  //   try {
-  //     await editDossierAdministratif(preparedData).unwrap();
-  //     notify();
-  //     navigate("/listeDossierAdministartifPersonnel");
-  //   } catch (error: any) {
-  //     console.log("Error submitting form:", error);
-  //   }
-  // };
   const onSubmitDossier = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (
@@ -289,7 +329,7 @@ const EditDossierAdministratifPersonnels = () => {
       console.error("Personnel ID is missing or invalid.");
       return;
     }
-  
+
     const preparedData = {
       dossierId: formData._id,
       papers: formData.papers.map((paper) => ({
@@ -297,9 +337,8 @@ const EditDossierAdministratifPersonnels = () => {
         annee: paper.annee,
         remarques: paper.remarques,
         file: paper.file,
-        // Retain existing file data if no new file is uploaded
-        FileBase64String: paper.FileBase64String || dossierAdministratif.papers.find((p: any) => p._id === paper.FileBase64String)?.FileBase64String,
-        FileExtension: paper.FileExtension || dossierAdministratif.papers.find((p: any) => p._id === paper.FileExtension)?.FileExtension,
+        FileBase64String: paper.FileBase64String,
+        FileExtension: paper.FileExtension,
       })),
       personnel: {
         _id: formData.personnel._id,
@@ -309,9 +348,6 @@ const EditDossierAdministratifPersonnels = () => {
         prenom_ar: formData.personnel.prenom_ar,
       },
     };
-  
-    console.log(preparedData);
-  
     try {
       await editDossierAdministratif(preparedData).unwrap();
       notify();
@@ -320,12 +356,12 @@ const EditDossierAdministratifPersonnels = () => {
       console.log("Error submitting form:", error);
     }
   };
-  
+
   const notify = () => {
     Swal.fire({
       position: "center",
       icon: "success",
-      title: "Fiche de voeux a été crée avec succés",
+      title: "Dossier personnel a été modifié avec succés",
       showConfirmButton: false,
       timer: 2000,
     });
@@ -380,15 +416,15 @@ const EditDossierAdministratifPersonnels = () => {
                         className="form-select text-muted"
                         name="personnel"
                         id="personnel"
-                        value={formData?.personnel?._id!}
+                        value={formData?.personnel?._id || ""}
                         onChange={handlePersonnelChange}
+                        disabled
                       >
-                        <option value="">Sélectionner Personnel</option>
-                        {allPersonnels.map((personnel) => (
-                          <option key={personnel._id} value={personnel._id}>
-                            {`${personnel.prenom_fr} ${personnel.nom_fr}`}
-                          </option>
-                        ))}
+                        <option value={formData?.personnel?._id || ""}>
+                          {`${formData?.personnel?.prenom_fr || ""} ${
+                            formData?.personnel?.nom_fr || ""
+                          }`}
+                        </option>
                       </select>
                     </div>
                   </Col>
@@ -402,7 +438,7 @@ const EditDossierAdministratifPersonnels = () => {
                             </Form.Label>
                             <Form.Select
                               aria-label={`Papier Administratif ${index}`}
-                              value={paper.file}
+                              value={paper.papier_administratif.nom_fr || ""}
                               onChange={(e) => handlePapierChange(e, index)}
                             >
                               <option value="">Sélectionner Papier</option>
@@ -448,23 +484,18 @@ const EditDossierAdministratifPersonnels = () => {
                           </Form.Group>
                         </Col>
 
-                      {/* */}  <Col lg={2}>
-  <Form.Group controlId={`formFile${index}`}>
-    <Form.Label htmlFor={`file-${index}`}>Télécharger Fichier</Form.Label>
-    <Form.Control
-      type="file"
-      accept=".pdf,.jpg,.png"
-      onChange={(e) => handlePDFUpload(e, index)}
-    />
-    {/* Display current file info if available */}
-    {formData.papers[index]?.file && (
-      <Form.Text muted>
-        Fichier actuel: {formData.papers[index]?.file.split('/').pop()} {/* Display file name */}
-      </Form.Text>
-    )}
-  </Form.Group>
-</Col>
-
+                        <Col lg={2}>
+                          <Form.Group controlId={`formFile${index}`}>
+                            <Form.Label htmlFor={`file-${index}`}>
+                              Telécharger Fichier
+                            </Form.Label>
+                            <Form.Control
+                              type="file"
+                              accept=".pdf,.jpg,.png"
+                              onChange={(e) => handlePDFUpload(e, index)}
+                            />
+                          </Form.Group>
+                        </Col>
 
                         <Col lg={1}>
                           <Button

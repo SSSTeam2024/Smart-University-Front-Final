@@ -2,14 +2,14 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export interface ServicePersonnel {
   _id: string;
-  value: string;
+  //value: string;
   service_fr: string;
   service_ar: string;
 }
 export const servicePersonnelSlice = createApi({
   reducerPath: "ServicePersonnel",
   baseQuery: fetchBaseQuery({
-    baseUrl: `${process.env.REACT_APP_API_URL}/service-personnel/`,
+    baseUrl: "http://localhost:5000/api/service-personnel/",
   }),
   tagTypes: ["ServicePersonnel"],
   endpoints(builder) {
@@ -51,8 +51,8 @@ export const servicePersonnelSlice = createApi({
 });
 
 export const {
-useAddServicePersonnelMutation,
-useDeleteServicePersonnelMutation,
-useFetchServicesPersonnelQuery,
-useUpdateServicePersonnelMutation
+  useAddServicePersonnelMutation,
+  useDeleteServicePersonnelMutation,
+  useFetchServicesPersonnelQuery,
+  useUpdateServicePersonnelMutation,
 } = servicePersonnelSlice;

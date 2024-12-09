@@ -19,6 +19,7 @@ export interface Paper {
 }
 
 export interface DossierAdministratif {
+  _id?: string;
   dossierId?: string;
   papers: Paper[];
   enseignant?: {
@@ -35,6 +36,7 @@ export interface DossierAdministratif {
     prenom_fr: string;
     prenom_ar: string;
   };
+  isArchived?: boolean;
 }
 
 
@@ -70,7 +72,32 @@ export const dossierAdministratifSlice = createApi({
         }),
         invalidatesTags: ["DossierAdministratif"],
       }),
-  
+
+      removeSpecificPaper: builder.mutation<void, { dossierId: string; userId: string; userType: string; paperDetails: { paperId: string; annee: string; remarques: string; file: string; } }>({
+        query: ({ dossierId, userId, userType, paperDetails }) => ({
+          url: `/remove-paper`,
+          method: "DELETE",
+          body: { dossierId, userId, userType, ...paperDetails },
+        }),
+        invalidatesTags: ["DossierAdministratif"], // Invalidate to refetch data
+      }),
+      archiveDossierAdministratif: builder.mutation<void, { dossierId: string }>({
+        query: ({ dossierId }) => ({
+          url: `/archive-dossier`,
+          method: "PUT",
+          body: { dossierId },
+        }),
+        invalidatesTags: ["DossierAdministratif"],
+      }),
+      restoreDossierAdministratif: builder.mutation<void, { dossierId: string }>({
+        query: ({ dossierId }) => ({
+          url: `/restore-dossier`,
+          method: "PUT",
+          body: { dossierId },
+        }),
+        invalidatesTags: ["DossierAdministratif"],
+      }),
+      
     };
   },
 });
@@ -78,5 +105,8 @@ export const dossierAdministratifSlice = createApi({
 export const {
 useAddDossierAdministratifMutation,
 useFetchDossierAdministratifQuery,
-useUpdateDossierAdministratifMutation
+useUpdateDossierAdministratifMutation,
+useRemoveSpecificPaperMutation,
+useArchiveDossierAdministratifMutation,
+useRestoreDossierAdministratifMutation
 } = dossierAdministratifSlice;

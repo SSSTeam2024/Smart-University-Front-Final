@@ -2,19 +2,22 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export interface CategoriePersonnel {
   _id: string;
-  value: string;
+  // value: string;
   categorie_fr: string;
   categorie_ar: string;
 }
 export const categoriePersonnelSlice = createApi({
   reducerPath: "CategoriePersonnel",
   baseQuery: fetchBaseQuery({
-    baseUrl: `${process.env.REACT_APP_API_URL}/categorie-personnel/`,
+    baseUrl: "http://localhost:5000/api/categorie-personnel/",
   }),
   tagTypes: ["CategoriePersonnel"],
   endpoints(builder) {
     return {
-      fetchCategoriesPersonnel: builder.query<CategoriePersonnel[], number | void>({
+      fetchCategoriesPersonnel: builder.query<
+        CategoriePersonnel[],
+        number | void
+      >({
         query() {
           return `get-all-categorie-personnel`;
         },
@@ -51,8 +54,8 @@ export const categoriePersonnelSlice = createApi({
 });
 
 export const {
-useFetchCategoriesPersonnelQuery,
-useAddCategoriePersonnelMutation,
-useUpdateCategoriePersonnelMutation,
-useDeleteCategoriePersonnelMutation
+  useFetchCategoriesPersonnelQuery,
+  useAddCategoriePersonnelMutation,
+  useUpdateCategoriePersonnelMutation,
+  useDeleteCategoriePersonnelMutation,
 } = categoriePersonnelSlice;

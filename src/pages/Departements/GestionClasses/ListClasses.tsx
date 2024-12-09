@@ -10,8 +10,6 @@ import {
 } from "react-bootstrap";
 import Breadcrumb from "Common/BreadCrumb";
 import { Link, useNavigate } from "react-router-dom";
-
-import { sellerList } from "Common/data";
 import Swal from "sweetalert2";
 import TableContainer from "Common/TableContainer";
 import { Classe, useDeleteClasseMutation, useFetchClassesQuery } from "features/classe/classe";
@@ -31,6 +29,7 @@ const ListClasses = () => {
     navigate("/departement/gestion-classes/add-classe");
   }
   const { data = [] } = useFetchClassesQuery();
+  console.log(data);
   const [deleteClasse] = useDeleteClasseMutation();
   console.log(data)
 
@@ -41,6 +40,7 @@ const ListClasses = () => {
     },
     buttonsStyling: false,
   });
+  
   const AlertDelete = async (_id: string) => {
     swalWithBootstrapButtons
       .fire({
@@ -110,7 +110,7 @@ const ListClasses = () => {
         },
         {
           Header: "Section",
-          accessor: (row: any) => row.section_classe?.abreviation || "",
+          accessor: (row: any) => row.niveau_classe?.sections[0]?.abreviation! || "",
           disableFilters: true,
           filterable: true,
       },
@@ -156,29 +156,7 @@ const ListClasses = () => {
             accessor: (classe: Classe) => {
                 return (
                     <ul className="hstack gap-2 list-unstyled mb-0">
-                     
-                      <li>
-                        <Link
-                          to="#"
-                          className="badge bg-primary-subtle text-primary edit-item-btn"
-                    
-                        >
-                          <i
-                            className="ph ph-pencil-line"
-                            style={{
-                              transition: "transform 0.3s ease-in-out",
-                              cursor: "pointer",
-                              fontSize: "1.5em",
-                            }}
-                            onMouseEnter={(e) =>
-                              (e.currentTarget.style.transform = "scale(1.2)")
-                            }
-                            onMouseLeave={(e) =>
-                              (e.currentTarget.style.transform = "scale(1)")
-                            }
-                          ></i>
-                        </Link>
-                      </li>
+                      
                       <li>
                         <Link
                           to="#"

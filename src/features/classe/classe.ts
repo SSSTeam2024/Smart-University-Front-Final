@@ -3,7 +3,6 @@ import { Matiere } from "features/matiere/matiere";
 import { Niveau } from "features/niveau/niveau";
 import { Section } from "features/section/section";
 
-
 export interface Classe {
   _id: string;
   nom_classe_fr: string;
@@ -52,6 +51,18 @@ export const classeSlice = createApi({
         },
         invalidatesTags: ["Classe"],
       }),
+
+      fetchClassesByTeacher: builder.mutation<Classe[], any>({
+        query(payload) {
+          return {
+            url: "/get-classes-by-teacher",
+            method: "POST",
+            body: payload,
+          };
+        },
+        invalidatesTags: ["Classe"],
+      }),
+
       updateClasse: builder.mutation<void, Classe>({
         query: ({ _id, ...rest }) => ({
           url: `/update-classe/${_id}`,
@@ -67,14 +78,14 @@ export const classeSlice = createApi({
         }),
         invalidatesTags: ["Classe"],
       }),
-      fetchClasseById: builder.query<Classe,string | void>({
+      fetchClasseById: builder.query<Classe, string | void>({
         query: (_id) => ({
           url: `/get-classe/${_id}`,
-          method: "GET"
+          method: "GET",
         }),
         providesTags: ["Classe"],
       }),
-      
+
       assignMatiereToClasse: builder.mutation<void, AssignMatieresPayload>({
         query: (payload) => ({
           url: `/assign-matieres-to-classe/${payload._id}`,
@@ -83,7 +94,10 @@ export const classeSlice = createApi({
         }),
         invalidatesTags: ["Classe"],
       }),
-      deleteAssignedMatiereFromClasse: builder.mutation<void, { classeId: string; matiereId: string }>({
+      deleteAssignedMatiereFromClasse: builder.mutation<
+        void,
+        { classeId: string; matiereId: string }
+      >({
         query: ({ classeId, matiereId }) => ({
           url: `delete-assigned-matiere/${classeId}/${matiereId}`,
           method: "DELETE",
@@ -94,18 +108,18 @@ export const classeSlice = createApi({
         query: (classeId) => `get-assigned-matieres/${classeId}`,
         providesTags: ["Classe"],
       }),
-      
     };
   },
 });
 
 export const {
-useFetchClassesQuery,
-useAddClasseMutation,
-useDeleteClasseMutation,
-useUpdateClasseMutation, 
-useFetchClasseByIdQuery,
-useAssignMatiereToClasseMutation,
-useDeleteAssignedMatiereFromClasseMutation,
-useGetAssignedMatieresQuery
+  useFetchClassesQuery,
+  useAddClasseMutation,
+  useDeleteClasseMutation,
+  useUpdateClasseMutation,
+  useFetchClasseByIdQuery,
+  useAssignMatiereToClasseMutation,
+  useDeleteAssignedMatiereFromClasseMutation,
+  useGetAssignedMatieresQuery,
+  useFetchClassesByTeacherMutation,
 } = classeSlice;

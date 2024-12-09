@@ -62,7 +62,8 @@ const ProfileDropdown = () => {
                     </span>
                 </Dropdown.Toggle>
                 <Dropdown.Menu className="dropdown-menu-end">
-                    <h6 className="dropdown-header">Welcome {user?.name}!</h6>
+        
+            {/* <h6 className="dropdown-header">Welcome {user?.personnelId?.prenom_fr!} {user?.personnelId?.nom_fr!}!</h6> */}
                     <Dropdown.Item href="/user-profile"><i className="mdi mdi-account-circle text-muted fs-16 align-middle me-1"></i> <span className="align-middle">Profile</span></Dropdown.Item>
                     <Dropdown.Item href="/#!"><i className="mdi mdi-message-text-outline text-muted fs-16 align-middle me-1"></i> <span className="align-middle">Messages</span></Dropdown.Item>
                     <Dropdown.Item href="/#!"><i className="mdi mdi-calendar-check-outline text-muted fs-16 align-middle me-1"></i> <span className="align-middle">Taskboard</span></Dropdown.Item>

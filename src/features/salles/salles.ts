@@ -2,25 +2,25 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export interface Salle {
   _id: string;
-  salle: string,
-  emplacement: string,
-  type_salle: string,
-  departement:{
+  salle: string;
+  emplacement: string;
+  type_salle: string;
+  departement: {
     _id: string;
-  description: string,
-  volume_horaire: string,
-  nom_chef_dep: string,
-  name_ar: string,
-  name_fr: string,
-  SignatureFileExtension:string;
-  SignatureFileBase64String:string;
-  signature:string
-  }
+    description: string;
+    volume_horaire: string;
+    nom_chef_dep: string;
+    name_ar: string;
+    name_fr: string;
+    SignatureFileExtension: string;
+    SignatureFileBase64String: string;
+    signature: string;
+  };
 }
 export const salleSlice = createApi({
   reducerPath: "Salle",
   baseQuery: fetchBaseQuery({
-    baseUrl: `${process.env.REACT_APP_API_URL}/salle/`,
+    baseUrl: "http://localhost:5000/api/salle/",
   }),
   tagTypes: ["Salle"],
   endpoints(builder) {
@@ -36,6 +36,26 @@ export const salleSlice = createApi({
         query(payload) {
           return {
             url: "/create-salle",
+            method: "POST",
+            body: payload,
+          };
+        },
+        invalidatesTags: ["Salle"],
+      }),
+      getSalleByDayAndTime: builder.mutation<Salle[], any>({
+        query(payload) {
+          return {
+            url: "get-salle-by-day-time",
+            method: "POST",
+            body: payload,
+          };
+        },
+        invalidatesTags: ["Salle"],
+      }),
+      getSallesDispoRattrapge: builder.mutation<Salle[], any>({
+        query(payload) {
+          return {
+            url: "get-salles-disponibles-rattrapage",
             method: "POST",
             body: payload,
           };
@@ -71,8 +91,10 @@ export const salleSlice = createApi({
 
 export const {
   useAddSalleMutation,
+  useGetSalleByDayAndTimeMutation,
   useDeleteSalleMutation,
   useFetchSalleByIdMutation,
   useUpdateSalleMutation,
-  useFetchSallesQuery
+  useFetchSallesQuery,
+  useGetSallesDispoRattrapgeMutation,
 } = salleSlice;

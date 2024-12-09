@@ -2,14 +2,14 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export interface PostePersonnel {
   _id: string;
-  value: string;
+  // value: string;
   poste_fr: string;
   poste_ar: string;
 }
 export const postePersonnelSlice = createApi({
   reducerPath: "PostePersonnel",
   baseQuery: fetchBaseQuery({
-    baseUrl: `${process.env.REACT_APP_API_URL}/poste-personnel/`,
+    baseUrl: "http://localhost:5000/api/poste-personnel/",
   }),
   tagTypes: ["PostePersonnel"],
   endpoints(builder) {

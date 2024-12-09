@@ -2,14 +2,14 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export interface PosteEnseignant {
   _id: string;
-  value_poste_enseignant: string;
+  //  value_poste_enseignant: string;
   poste_fr: string;
   poste_ar: string;
 }
 export const posteEnseignantSlice = createApi({
   reducerPath: "PosteEnseignant",
   baseQuery: fetchBaseQuery({
-    baseUrl: `${process.env.REACT_APP_API_URL}/poste-enseignant/`,
+    baseUrl: "http://localhost:5000/api/poste-enseignant/",
   }),
   tagTypes: ["PosteEnseignant"],
   endpoints(builder) {
@@ -51,8 +51,8 @@ export const posteEnseignantSlice = createApi({
 });
 
 export const {
- useAddPosteEnseignantMutation,
- useDeletePosteEnseignantMutation,
- useFetchPostesEnseignantQuery,
- useUpdatePosteEnseignantMutation
+  useAddPosteEnseignantMutation,
+  useDeletePosteEnseignantMutation,
+  useFetchPostesEnseignantQuery,
+  useUpdatePosteEnseignantMutation,
 } = posteEnseignantSlice;

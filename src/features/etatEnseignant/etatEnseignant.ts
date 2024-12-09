@@ -2,7 +2,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export interface EtatEnseignant {
   _id: string;
-  value_etat_enseignant: string;
+  // value_etat_enseignant: string;
   etat_fr: string;
   etat_ar: string;
 }
@@ -51,8 +51,8 @@ export const etatEnseignantSlice = createApi({
 });
 
 export const {
-useAddEtatEnseignantMutation,
-useFetchEtatsEnseignantQuery,
-useDeleteEtatEnseignantMutation,
-useUpdateEtatEnseignantMutation
+  useAddEtatEnseignantMutation,
+  useFetchEtatsEnseignantQuery,
+  useDeleteEtatEnseignantMutation,
+  useUpdateEtatEnseignantMutation,
 } = etatEnseignantSlice;

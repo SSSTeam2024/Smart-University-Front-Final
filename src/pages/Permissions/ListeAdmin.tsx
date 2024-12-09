@@ -118,7 +118,7 @@ const ListeAdmin = () => {
         () => [
             {
                 Header: "Nom",
-                accessor: "name",
+                accessor: (row: any) => row.personnelId?.prenom_fr || "",
                 disableFilters: true,
                 filterable: true,
             },

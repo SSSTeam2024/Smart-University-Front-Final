@@ -20,6 +20,7 @@ import {
   useDeleteSalleMutation,
   useFetchSallesQuery,
 } from "features/salles/salles";
+import { useFetchAllSessionsByRoomIdMutation } from "features/seance/seance";
 
 const ListSalles = () => {
   document.title = "Liste des salles | Smart University";
@@ -42,6 +43,7 @@ const ListSalles = () => {
     navigate("/departement/gestion-salles/add-salle");
   }
   const { data = [] } = useFetchSallesQuery();
+  const [getSessionsByRoomId] = useFetchAllSessionsByRoomIdMutation();
   const [deleteSalle] = useDeleteSalleMutation();
 
   const swalWithBootstrapButtons = Swal.mixin({
@@ -51,6 +53,21 @@ const ListSalles = () => {
     },
     buttonsStyling: false,
   });
+
+  const checkRoomIsCleanAndDelete = async (_id: string) => {
+    let res = await getSessionsByRoomId(_id).unwrap();
+    console.log(res);
+    if(res.length === 0) {
+      await AlertDelete(_id);
+    }else{
+      let classNames = "";
+      for(let session of res){
+        classNames += "\n- " + session.classe.nom_classe_fr + " | Semestre " + session.semestre;
+      }
+      alert("Cette salle est présente dans les emplois de temps des classes suivantes: " + classNames);
+    }
+  }
+
   const AlertDelete = async (_id: string) => {
     swalWithBootstrapButtons
       .fire({
@@ -58,7 +75,7 @@ const ListSalles = () => {
         text: "Vous ne pourrez pas revenir en arrière!",
         icon: "warning",
         showCancelButton: true,
-        confirmButtonText: "Oui, supprimez-le!",
+        confirmButtonText: "Oui, supprimer!",
         cancelButtonText: "Non, annuler!",
         reverseButtons: true,
       })
@@ -66,8 +83,8 @@ const ListSalles = () => {
         if (result.isConfirmed) {
           deleteSalle(_id);
           swalWithBootstrapButtons.fire(
-            "Supprimé!",
-            "Salle a été supprimé.",
+            "Supprimée!",
+            "Salle supprimée.",
             "success"
           );
         } else if (result.dismiss === Swal.DismissReason.cancel) {
@@ -82,39 +99,7 @@ const ListSalles = () => {
 
   const columns = useMemo(
     () => [
-      {
-        Header: (
-          <div className="form-check">
-            {" "}
-            <input
-              className="form-check-input"
-              type="checkbox"
-              id="checkAll"
-              value="option"
-            />{" "}
-          </div>
-        ),
-        Cell: (cellProps: any) => {
-          return (
-            <div className="form-check">
-              {" "}
-              <input
-                className="form-check-input"
-                type="checkbox"
-                name="chk_child"
-                defaultValue="option1"
-              />{" "}
-            </div>
-          );
-        },
-        id: "#",
-      },
-      {
-        Header: "ID",
-        accessor: "_id",
-        disableFilters: true,
-        filterable: true,
-      },
+    
       {
         Header: "Salle",
         accessor: "salle",
@@ -179,6 +164,7 @@ const ListSalles = () => {
                 <Link
                   to="#"
                   className="badge bg-danger-subtle text-danger remove-item-btn"
+                  onClick={() => checkRoomIsCleanAndDelete(salle?._id!)}
                 >
                   <i
                     className="ph ph-trash"
@@ -193,7 +179,7 @@ const ListSalles = () => {
                     onMouseLeave={(e) =>
                       (e.currentTarget.style.transform = "scale(1)")
                     }
-                    onClick={() => AlertDelete(salle?._id!)}
+                    
                   ></i>
                 </Link>
               </li>

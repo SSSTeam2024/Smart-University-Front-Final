@@ -2,19 +2,21 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export interface SpecialiteEnseignant {
   _id: string;
-  value_specialite_enseignant: string;
   specialite_fr: string;
   specialite_ar: string;
 }
 export const specialiteEnseignantSlice = createApi({
   reducerPath: "SpecialiteEnseignant",
   baseQuery: fetchBaseQuery({
-    baseUrl: `${process.env.REACT_APP_API_URL}/specialite-enseignant/`,
+    baseUrl: "http://localhost:5000/api/specialite-enseignant/",
   }),
   tagTypes: ["SpecialiteEnseignant"],
   endpoints(builder) {
     return {
-      fetchSpecialitesEnseignant: builder.query<SpecialiteEnseignant[], number | void>({
+      fetchSpecialitesEnseignant: builder.query<
+        SpecialiteEnseignant[],
+        number | void
+      >({
         query() {
           return `get-all-specialite-enseignant`;
         },
@@ -51,9 +53,8 @@ export const specialiteEnseignantSlice = createApi({
 });
 
 export const {
-
-useFetchSpecialitesEnseignantQuery,
-useAddSpecialiteEnseignantMutation,
-useDeleteSpecialiteEnseignantMutation,
-useUpdateSpecialiteEnseignantMutation
+  useFetchSpecialitesEnseignantQuery,
+  useAddSpecialiteEnseignantMutation,
+  useDeleteSpecialiteEnseignantMutation,
+  useUpdateSpecialiteEnseignantMutation,
 } = specialiteEnseignantSlice;

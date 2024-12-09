@@ -2,14 +2,14 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export interface GradePersonnel {
   _id: string;
-  value_grade_personnel: string;
+  // value_grade_personnel: string;
   grade_fr: string;
   grade_ar: string;
 }
 export const gradePersonnelSlice = createApi({
   reducerPath: "GradePersonnel",
   baseQuery: fetchBaseQuery({
-    baseUrl: `${process.env.REACT_APP_API_URL}/grade-personnel/`,
+    baseUrl: "http://localhost:5000/api/grade-personnel/",
   }),
   tagTypes: ["GradePersonnel"],
   endpoints(builder) {
@@ -51,8 +51,8 @@ export const gradePersonnelSlice = createApi({
 });
 
 export const {
-useFetchGradesPersonnelQuery,
-useAddGradePersonnelMutation,
-useUpdateGradePersonnelMutation,
-useDeleteGradePersonnelMutation
+  useFetchGradesPersonnelQuery,
+  useAddGradePersonnelMutation,
+  useUpdateGradePersonnelMutation,
+  useDeleteGradePersonnelMutation,
 } = gradePersonnelSlice;

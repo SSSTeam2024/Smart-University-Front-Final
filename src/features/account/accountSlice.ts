@@ -3,19 +3,30 @@ import { RootState } from "app/store";
 
 export interface UserResponse {
   user: {
-    _id: string;
-    name: string;
-    email: string;
+    _id?: string;
+    personnelId?: string;
+    enseignantId: string;
     login: string;
-    role_id: string;
-    departement_id: string;
+    service: string;
     password: string; 
     api_token: string;
-    photo: string;
     app_name: string;
     status: string;
     permissions: any[];
   };
+}
+export interface AddUser {
+    _id?: string;
+    personnelId: string;
+    enseignantId: string;
+    login: string;
+    service: string;
+    // api_token: string;
+    password: string; 
+    app_name: string;
+    status: string;
+    // permissions: any[];
+
 }
 export interface LoginRequest {
     login: string;
@@ -59,6 +70,16 @@ export const accountSlice = createApi({
         },
         invalidatesTags: ["Account"],
       }),
+      addUser: builder.mutation<AddUser, Partial<AddUser>>({
+        query(payload) {
+          return {
+            url: "/create-user",
+            method: "POST",
+            body: payload,
+          };
+        },
+        invalidatesTags: ["Account"],
+      }),
       fetchAllUsers: builder.query<UserResponse, void>({
         query: () => ({
           url: `/get-all-users`,
@@ -77,4 +98,4 @@ export const accountSlice = createApi({
   },
 });
 
-export const { useLoginMutation, useGetUserMutation, useFetchAllUsersQuery, useDeleteUserMutation } = accountSlice;
+export const { useLoginMutation, useAddUserMutation, useGetUserMutation, useFetchAllUsersQuery, useDeleteUserMutation } = accountSlice;

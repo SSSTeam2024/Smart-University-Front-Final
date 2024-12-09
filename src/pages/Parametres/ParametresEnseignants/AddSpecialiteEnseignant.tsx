@@ -8,7 +8,8 @@ import Swal from "sweetalert2";
 import { useAddSpecialiteEnseignantMutation } from "features/specialiteEnseignant/specialiteEnseignant";
 
 const AddSpecialiteEnseignant = () => {
-  document.title = " Ajouter Spécialité Enseignant | Application Smart Institute";
+  document.title =
+    " Ajouter Spécialité Enseignant | Application Smart Institute";
   const navigate = useNavigate();
 
   function tog_retourParametres() {
@@ -19,7 +20,7 @@ const AddSpecialiteEnseignant = () => {
 
   const [formData, setFormData] = useState({
     _id: "",
-    value_specialite_enseignant: "",
+    //value_specialite_enseignant: "",
     specialite_ar: "",
     specialite_fr: "",
   });
@@ -90,7 +91,7 @@ const AddSpecialiteEnseignant = () => {
                 ></div>
                 <input type="hidden" id="id-field" />
                 <Row>
-                  <Col lg={4}>
+                  {/* <Col lg={4}>
                     <div className="mb-3">
                       <Form.Label htmlFor="value_specialite_enseignant">Valeur</Form.Label>
                       <Form.Control
@@ -102,12 +103,12 @@ const AddSpecialiteEnseignant = () => {
                         value={formData.value_specialite_enseignant}
                       />
                     </div>
-                  </Col>
+                  </Col> */}
 
                   <Col lg={4}>
                     <div className="mb-3">
                       <Form.Label htmlFor="specialite_fr">
-                      Spécialité Enseignant
+                        Spécialité Enseignant
                       </Form.Label>
                       <Form.Control
                         type="text"

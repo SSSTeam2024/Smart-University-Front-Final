@@ -1,12 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Button, Col, Container, Form, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import "flatpickr/dist/flatpickr.min.css";
 import Swal from "sweetalert2";
-import {
-  Enseignant,
-  useFetchEnseignantsQuery,
-} from "features/enseignant/enseignantSlice";
 import Flatpickr from "react-flatpickr";
 import { format } from "date-fns";
 import { useAddDossierAdministratifMutation } from "features/dossierAdministratif/dossierAdministratif";
@@ -43,16 +39,14 @@ export interface DossierAdministratif {
 
 const AddDossieradministratifPersonnels = () => {
   document.title =
-    "Ajouter dossier Administratif | Application Smart Institute";
+    "Ajouter dossier administratif | Application Smart Institute";
   const navigate = useNavigate();
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-
   function tog_retourParametres() {
-    navigate("/gestion-personnel/liste-dossier-administartif");
+    navigate("/listeDossierAdministartifPersonnel");
   }
 
   const [createDossierAdministratif] = useAddDossierAdministratifMutation();
-  const { data: allPersonnels = [] } = useFetchPersonnelsQuery();
+  const { data: allPersonnels = [], refetch: refetchPersonnels } = useFetchPersonnelsQuery();
 
   const { data: allPapierAdministratifs = [] } =
     useFetchPapierAdministratifQuery();
@@ -75,8 +69,6 @@ const AddDossieradministratifPersonnels = () => {
       paper.category.includes(category)
     );
   };
-
-  // Get filtered papers based on the selected category
   const filteredPapers = filterByCategory(selectedCategory);
 
   const handlePapierChange = (
@@ -87,10 +79,7 @@ const AddDossieradministratifPersonnels = () => {
     const selectedPaper = filteredPapers.find(
       (paper) => paper.nom_fr === selectedNomFr
     );
-
-    // Update the formData with the selected paper's details
     if (selectedPaper) {
-      // Create a complete PapierAdministratif object
       const updatedPapier: PapierAdministratif = {
         _id: selectedPaper._id,
         nom_ar: selectedPaper.nom_ar,
@@ -119,14 +108,6 @@ const AddDossieradministratifPersonnels = () => {
     event: React.ChangeEvent<HTMLSelectElement>
   ) => {
     const selectedPersonnelId = event.target.value;
-    console.log("Selected Personnel ID:", selectedPersonnelId);
-    const doesSelectedPersonnelExist = allPersonnels.some(
-      (personnel) =>
-        personnel._id.trim().toLowerCase() ===
-        selectedPersonnelId.trim().toLowerCase()
-    );
-    console.log("Does Selected Personnel Exist:", doesSelectedPersonnelExist);
-    console.log("All Personnels:", allPersonnels);
     allPersonnels.forEach((personnel, index) => {
       console.log(`Personnel ${index}:`, personnel);
     });
@@ -141,9 +122,7 @@ const AddDossieradministratifPersonnels = () => {
       prenom_fr: "",
       prenom_ar: "",
     };
-    console.log("Selected Personnel Object:", selectedPersonnel);
     setFormData((prevData) => {
-      console.log("Previous Form Data:", prevData);
       return {
         ...prevData,
         personnel: selectedPersonnel,
@@ -182,6 +161,7 @@ const AddDossieradministratifPersonnels = () => {
       fileReader.readAsDataURL(file);
     });
   }
+
   const handlePDFUpload = async (event: any, index: number) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -220,7 +200,6 @@ const AddDossieradministratifPersonnels = () => {
 
   const onSubmitDossier = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Check for personnel ID validity
     if (
       !formData?.personnel?._id ||
       !isValidObjectId(formData?.personnel?._id)
@@ -246,12 +225,10 @@ const AddDossieradministratifPersonnels = () => {
         prenom_ar: formData.personnel.prenom_ar,
       },
     };
-
-    console.log(preparedData);
-
     try {
       await createDossierAdministratif(preparedData).unwrap();
       notify();
+      refetchPersonnels();
       navigate("/listeDossierAdministartifPersonnel");
     } catch (error: any) {
       console.log("Error submitting form:", error);
@@ -262,7 +239,7 @@ const AddDossieradministratifPersonnels = () => {
     Swal.fire({
       position: "center",
       icon: "success",
-      title: "Fiche de voeux a été crée avec succés",
+      title: "Dossier administratif a été crée avec succés",
       showConfirmButton: false,
       timer: 2000,
     });
@@ -296,7 +273,7 @@ const AddDossieradministratifPersonnels = () => {
       papers: prevData.papers.filter((_, i) => i !== index),
     }));
   };
-
+  
   return (
     <React.Fragment>
       <div className="page-content">
@@ -309,7 +286,7 @@ const AddDossieradministratifPersonnels = () => {
                   className="d-none alert alert-danger py-2"
                 ></div>
                 <input type="hidden" id="id-field" />
-                <Row>
+                <Row>         
                   <Col lg={2}>
                     <div className="mb-3">
                       <Form.Label htmlFor="personnel">Personnel</Form.Label>
@@ -317,18 +294,23 @@ const AddDossieradministratifPersonnels = () => {
                         className="form-select text-muted"
                         name="personnel"
                         id="personnel"
-                        value={formData?.personnel?._id!}
+                        value={formData?.personnel?._id || ""}
                         onChange={handlePersonnelChange}
                       >
                         <option value="">Sélectionner Personnel</option>
-                        {allPersonnels.map((personnel) => (
-                          <option key={personnel._id} value={personnel._id}>
-                            {`${personnel.prenom_fr} ${personnel.nom_fr}`}
-                          </option>
-                        ))}
+                        {allPersonnels
+                          .filter(
+                            (personnel) => personnel?.papers?.length === 0
+                          )
+                          .map((personnel) => (
+                            <option key={personnel._id} value={personnel._id}>
+                              {`${personnel.prenom_fr} ${personnel.nom_fr}`}
+                            </option>
+                          ))}
                       </select>
                     </div>
                   </Col>
+
                   <Col lg={10}>
                     {formData.papers.map((paper, index) => (
                       <Row>

@@ -45,6 +45,15 @@ import { shortCodeSlice } from "features/shortCode/shortCodeSlice";
 import { varibaleGlobaleSlice } from "features/variableGlobale/variableGlobaleSlice";
 import { papierAdministratifSlice } from "features/papierAdministratif/papierAdministratif";
 import { dossierAdministratifSlice } from "features/dossierAdministratif/dossierAdministratif";
+import { leaveBalanceSlice } from "features/congé/leaveBalanceSlice";
+import { leaveTypeSlice } from "features/congé/leaveTypeSlice";
+import { timeTableParamsSlice } from "features/timeTableParams/timeTableParams";
+import {demandeCongeSlice} from "features/congé/demandeCongeSlice"
+import { typeSeanceSlice } from "features/typeSeance/typeSeance";
+import { classePeriodSlice } from "features/classPeriod/classPeriod";
+import { teachersPeriodsSlice } from "features/teachersPeriods/teachersPeriods";
+import { rattrapageSlice } from "features/rattrapage/rattrapage";
+
 export const store = configureStore({
     reducer: { 
     [accountSlice.reducerPath]: accountSlice.reducer,
@@ -84,6 +93,17 @@ export const store = configureStore({
     [varibaleGlobaleSlice.reducerPath]: varibaleGlobaleSlice.reducer,
     [papierAdministratifSlice.reducerPath]: papierAdministratifSlice.reducer,
     [dossierAdministratifSlice.reducerPath]: dossierAdministratifSlice.reducer,
+    [leaveBalanceSlice.reducerPath]: leaveBalanceSlice.reducer,
+    [leaveTypeSlice.reducerPath]: leaveTypeSlice.reducer,
+    [demandeCongeSlice.reducerPath]: demandeCongeSlice.reducer,
+    [timeTableParamsSlice.reducerPath]: timeTableParamsSlice.reducer,
+    [typeSeanceSlice.reducerPath]: typeSeanceSlice.reducer,
+    [classePeriodSlice.reducerPath]: classePeriodSlice.reducer,
+    [teachersPeriodsSlice.reducerPath]: teachersPeriodsSlice.reducer,
+    [rattrapageSlice.reducerPath]: rattrapageSlice.reducer,
+
+
+
       auth: authSlice,
       Layout: LayoutReducer,
       ForgetPassword: ForgetPasswordReducer,
@@ -128,13 +148,21 @@ export const store = configureStore({
         shortCodeSlice.middleware,
         varibaleGlobaleSlice.middleware,
         papierAdministratifSlice.middleware,
-        dossierAdministratifSlice.middleware 
+        dossierAdministratifSlice.middleware,
+        leaveBalanceSlice.middleware,
+        leaveTypeSlice.middleware,
+        demandeCongeSlice.middleware,
+        timeTableParamsSlice.middleware,
+        typeSeanceSlice.middleware,
+        classePeriodSlice.middleware,
+        teachersPeriodsSlice.middleware,
+        rattrapageSlice.middleware,
       ]
         
       );
     },
   });
-  // optional, but required for refetchOnFocus/refetchOnReconnect behaviors
+  
   setupListeners(store.dispatch);
   export type AppDispatch = typeof store.dispatch;
   export type RootState = ReturnType<typeof store.getState>;

@@ -200,6 +200,17 @@ import AddDossieradministratif from "pages/Gestion-enseignant/Dossieradministrat
 import AddPapierAdministratif from "pages/Papier-Administratif/AddPapierAdministratif";
 import ListePapierAdministratifs from "pages/Papier-Administratif/ListePapierAdministratif";
 import EditDossierAdministratifEnseignants from "pages/Gestion-enseignant/Dossieradministratif/EditDossierAdministratif";
+import CreateAdmin from "pages/Permissions/AjouterAdmin";
+import GenerateDemande from "pages/Demande-etudiant/GenerateDemande";
+import ListeLeaveType from "pages/Gestion-solde-conge/ListeTypeConge";
+import AjouterLeaveType from "pages/Gestion-solde-conge/AjouterTypeConge";
+import ListeSoldeConge from "pages/Gestion-solde-conge/ListeSoldeConge";
+import AjouterDemandeConge from "pages/Gestion-demande-conge/AjouterDemandeConge";
+import ListeDemandeConge from "pages/Gestion-demande-conge/ListeDemandeConge";
+import DemandeCongeDetails from "pages/Gestion-demande-conge/DemandeCongeDetails";
+import EditDemandeConge from "pages/Gestion-demande-conge/EditDemandeConge";
+import AjouterSoldeConge from "pages/Gestion-solde-conge/AjouterSoldeConge";
+import EditAnnuelLeaveType from "pages/Gestion-solde-conge/ParamCongeAnnuel";
 
 const authProtectedRoutes = [
     { path: "/dashboard", component: <Dashboard /> },
@@ -263,6 +274,7 @@ const authProtectedRoutes = [
     { path: "/demandes-etudiant/Single-demande-etudiant", component: <SingleDemandeEtudiant /> },
     { path: "/demandes-etudiant/Edit-demande-etudiant", component: <EditDemandeEtudiant /> },
     { path: "/demandes-etudiant/ajouter-demande-etudiant", component: <AjouterDemandeEtudiant /> },
+    { path: "/demandes-etudiant/generer-demande-etudiant", component: <GenerateDemande /> },
 
     //demande enseignant
     { path: "/demandes-enseignant/liste-demande-enseignant", component: <ListeDemandeEnseignant /> },
@@ -374,6 +386,7 @@ const authProtectedRoutes = [
 { path: "/admin/single-admin", component: <SingleAdmin /> },
 { path: "/admin/edit-admin", component: <EditAdmin /> },
 { path: "/admin/history-admin", component: <HistoryAdmin /> },
+{ path: "/admin/ajouter-admin", component: <CreateAdmin /> },
 
 //template Body
 { path: "/template/liste-template-body", component: <TemplateBody /> },
@@ -387,8 +400,23 @@ const authProtectedRoutes = [
 
 
 // Papier administratif
-{ path: "/ajoutPapierAdministratif", component: <AddPapierAdministratif />, },
-{ path: "/listePapierAdministratif", component: <ListePapierAdministratifs />,},
+{ path: "/papier-administratif/ajouter-papier", component: <AddPapierAdministratif />, },
+{ path: "/papier-administratif/lister-papier", component: <ListePapierAdministratifs />,},
+
+
+// gestion des Types de congés
+{ path: "/type-conge/Liste-type-conge", component: <ListeLeaveType />,},
+{ path: "/type-conge/ajouter-type-conge", component: <AjouterLeaveType />,},
+{ path: "/type-conge/edit-annuel-type-conge", component: <EditAnnuelLeaveType />,},
+// gestion des demandes congés
+{ path: "/demande-conge/ajouter-demande-conge", component: <AjouterDemandeConge />,},
+{ path: "/demande-conge/liste-demande-conge", component: <ListeDemandeConge />,},
+{ path: "/demande-conge/single-demande-conge", component: <DemandeCongeDetails />,},
+{ path: "/demande-conge/edit-demande-conge", component:<EditDemandeConge/>},
+
+// gestion des soldes congés
+{ path: "/solde-conge/Ajouter-solde-conge", component: <AjouterSoldeConge />,},
+{ path: "/solde-conge/liste-solde-conge", component: <ListeSoldeConge />,},
 
 
 

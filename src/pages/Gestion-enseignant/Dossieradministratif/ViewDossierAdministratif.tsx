@@ -1,90 +1,123 @@
-import React, { useState, useMemo, useCallback } from "react";
-import { Card, Col, Nav, Row, Tab, Table } from "react-bootstrap";
+import React, { useMemo } from "react";
+import { Card, Col, Nav, Row, Tab } from "react-bootstrap";
 import TableContainer from "Common/TableContainer";
-import { Link, useLocation, useParams } from "react-router-dom";
-import img1 from "assets/images/users/avatar-1.jpg";
-import { DossierAdministratif, useFetchDossierAdministratifQuery } from "features/dossierAdministratif/dossierAdministratif";
+import { useLocation } from "react-router-dom";
+import {
+  DossierAdministratif,
+  useFetchDossierAdministratifQuery,
+  useRemoveSpecificPaperMutation,
+} from "features/dossierAdministratif/dossierAdministratif";
 import Swal from "sweetalert2";
 
 const ViewDossierAdministratif = () => {
-  document.title = "Demande Etudiant | Smart Institute";
-  const [modal_AddUserModals, setmodal_AddUserModals] =
-    useState<boolean>(false);
-  const [isMultiDeleteButton, setIsMultiDeleteButton] =
-    useState<boolean>(false);
-  function tog_AddUserModals() {
-    setmodal_AddUserModals(!modal_AddUserModals);
-  }
+  document.title = "Visualiser dossier enseignant | Smart Institute";
+
   const location = useLocation();
   const dossierAdministratif = location.state;
 
   const { data: allDossiers = [] } = useFetchDossierAdministratifQuery();
-
-  // Access the enseignant ID
   const enseignantId = dossierAdministratif?.enseignant?._id;
-
-  console.log("Enseignant ID:", enseignantId);
-
   const filteredDossiers = allDossiers.filter((dossier) => {
-    const currentEnseignantId = dossier.enseignant?._id;
-
-    console.log("Comparing:", currentEnseignantId, "with", enseignantId);
-
+    const currentEnseignantId = dossier?.enseignant?._id!;
     return String(currentEnseignantId).trim() === String(enseignantId).trim();
   });
 
+
   console.log("filteredDossiers", filteredDossiers);
+  const [deleteSpecificPaper] = useRemoveSpecificPaperMutation();
 
-  // Checked All
-  const checkedAll = useCallback(() => {
-    const checkall = document.getElementById("checkAll") as HTMLInputElement;
-    const ele = document.querySelectorAll(".userCheckBox");
+  const AlertDelete = async (dossierId: string, paper: any) => {
+    console.log(dossierId)
+    const swalWithBootstrapButtons = Swal.mixin({
+      customClass: {
+        confirmButton: "btn btn-success",
+        cancelButton: "btn btn-danger",
+      },
+      buttonsStyling: false,
+    });
 
-    if (checkall.checked) {
-      ele.forEach((ele: any) => {
-        ele.checked = true;
+    swalWithBootstrapButtons
+      .fire({
+        title: "Êtes-vous sûr?",
+        text: "Vous ne pourrez pas revenir en arrière!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Oui, supprimez-le!",
+        cancelButtonText: "Non, annuler!",
+        reverseButtons: true,
+      })
+      .then(async (result) => {
+        if (result.isConfirmed) {
+          try {
+            const paperDetails = {
+              paperId: paper?.paperId?._id! ?? "", // Ensure this gets the correct ID for the paper
+              annee: paper.date ?? "",
+              remarques: paper.remarque ?? "",
+              file: paper.file ?? "",
+            };
+            
+            try {
+              console.log(
+                "Attempting to delete paper with dossierId:",
+                dossierId
+              );
+              console.log("Paper details:", paperDetails);
+              if (!paperDetails.paperId) {
+                Swal.fire("Erreur", "Le papier à supprimer est invalide.", "error");
+                return;
+              }
+              await deleteSpecificPaper({
+                dossierId,
+                userId: enseignantId,
+                userType: "enseignant",
+                paperDetails,
+              });
+              console.log("Delete request successful.");
+            } catch (error) {
+              console.error("Erreur lors de la suppression du papier:", error);
+            }
+
+            swalWithBootstrapButtons.fire(
+              "Supprimé!",
+              "Le papier a été supprimé.",
+              "success"
+            );
+          } catch (error) {
+            console.error("Erreur lors de la suppression du papier:", error);
+            swalWithBootstrapButtons.fire(
+              "Erreur",
+              "Échec de la suppression du papier.",
+              "error"
+            );
+          }
+        } else if (result.dismiss === Swal.DismissReason.cancel) {
+          swalWithBootstrapButtons.fire(
+            "Annulé",
+            "Le papier est en sécurité :)",
+            "error"
+          );
+        }
       });
-    } else {
-      ele.forEach((ele: any) => {
-        ele.checked = false;
-      });
-    }
-    checkedbox();
-  }, []);
-
-  const checkedbox = () => {
-    const ele = document.querySelectorAll(".userCheckBox:checked");
-    ele.length > 0
-      ? setIsMultiDeleteButton(true)
-      : setIsMultiDeleteButton(false);
   };
 
-
-  const swalWithBootstrapButtons = Swal.mixin({
-    customClass: {
-      confirmButton: "btn btn-success",
-      cancelButton: "btn btn-danger",
-    },
-    buttonsStyling: false,
-  });
-
-
   const data = useMemo(() => {
-    return filteredDossiers.flatMap((dossier) =>
-      dossier.papers.map((paper) => ({
-        soustype: paper.papier_administratif.nom_fr,
-        date: paper.annee,
-        remarque: paper.remarques,
-        file: paper.file,
-      }))
-    );
+    return filteredDossiers.flatMap((dossier) => {
+      return dossier.papers.map((paper) => {
+        return {
+          dossierId: dossier._id,
+          paperId: paper.papier_administratif,
+          soustype: paper.papier_administratif.nom_fr,
+          date: paper.annee,
+          remarque: paper.remarques,
+          file: paper.file,
+        };
+      });
+    });
   }, [filteredDossiers]);
-
   
-  // Columns definition
+
   const columns = useMemo(
     () => [
-    
       {
         Header: "Papier administratif",
         accessor: "soustype",
@@ -103,76 +136,58 @@ const ViewDossierAdministratif = () => {
         disableFilters: true,
         filterable: true,
       },
-      //  {
-      //   Header: 'Fichier',
-      //   accessor: 'file',
-      //   disableFilters: true,
-      //   filterable: true,
-      //   Cell: ({ cell: { value } }: any)=> (
-      //     <a
-      //     href={`http://localhost:5000/files/dossierFiles/${value}`}
-      //       target="_blank"
-      //       rel="noopener noreferrer"
-      //     >
-      //       <i
-      //         className="bi bi-file-earmark-pdf"
-      //         style={{ cursor: 'pointer', fontSize: '1.5em', marginLeft: '30px' }}
-      //       ></i>
-      //     </a>
-      //   ),
-      // },
       {
-        Header: 'Fichier',
-        accessor: 'file',
+        Header: "Fichier",
+        accessor: "file",
         disableFilters: true,
-        Cell: ({ row }: any) => {
-          const fileUrl = row.original.file;
-          const fileLink = `http://localhost:5000/files/dossierFiles/${fileUrl}`;
-          console.log(fileLink);
-          return (
-            <a
-              href={`http://localhost:5000/files/dossierFiles/${fileUrl}`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <i
-                className="bi bi-file-earmark-pdf"
-                style={{ cursor: 'pointer', fontSize: '1.5em', marginLeft: '30px' }}
-              ></i>
-            </a>
-          );
-        },
-      }
+        filterable: true,
+        Cell: ({ cell: { value } }: { cell: { value: string } }) => (
+          <a
+            href={`http://localhost:5000/files/dossierFiles/${value}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <i
+              className="bi bi-file-earmark-pdf"
+              style={{
+                cursor: "pointer",
+                fontSize: "1.5em",
+                marginLeft: "30px",
+              }}
+            ></i>
+          </a>
+        ),
+      },
       ,
       {
         Header: "Action",
         disableFilters: true,
         filterable: true,
-        accessor: (dossierAdministratif: DossierAdministratif) => {
+        Cell: ({ row }: { row: { original: DossierAdministratif } }) => {
+          const dossierId = row.original.dossierId;
+          const paper: any = row.original;
           return (
             <ul className="hstack gap-2 list-unstyled mb-0">
-           
               <li>
-                <Link
-                  to="#"
+                <div
                   className="badge bg-danger-subtle text-danger remove-item-btn"
+                  onClick={() => {
+                    AlertDelete(dossierId!, paper);
+                  }}
+                  style={{
+                    transition: "transform 0.3s ease-in-out",
+                    cursor: "pointer",
+                    fontSize: "1.5em",
+                  }}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.transform = "scale(1.2)")
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.transform = "scale(1)")
+                  }
                 >
-                  <i
-                    className="ph ph-trash"
-                    style={{
-                      transition: "transform 0.3s ease-in-out",
-                      cursor: "pointer",
-                      fontSize: "1.5em",
-                    }}
-                    onMouseEnter={(e) =>
-                      (e.currentTarget.style.transform = "scale(1.2)")
-                    }
-                    onMouseLeave={(e) =>
-                      (e.currentTarget.style.transform = "scale(1)")
-                    }
-                   // onClick={() => AlertDelete(dossierAdministratif?._id!)}
-                  ></i>
-                </Link>
+                  <i className="ph ph-trash"></i>
+                </div>
               </li>
             </ul>
           );
@@ -235,10 +250,10 @@ const ViewDossierAdministratif = () => {
           </table>
           <div className="noresult" style={{ display: "none" }}>
             <div className="text-center">
-              <h5 className="mt-2">Sorry! No Result Found</h5>
+              <h5 className="mt-2">Désolé ! Aucun résultat trouvé</h5>
               <p className="text-muted mb-0">
-                We've searched more than 150+ Orders We did not find any orders
-                for you search.
+              Nous avons cherché dans plus de 150+ dossiers, mais
+              aucun résultat ne correspond à votre recherche.
               </p>
             </div>
           </div>

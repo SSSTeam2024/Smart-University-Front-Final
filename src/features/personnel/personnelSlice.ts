@@ -1,9 +1,13 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { DossierAdministratif } from "features/dossierAdministratif/dossierAdministratif";
 
 export interface Personnel {
+  dossier?: DossierAdministratif;
   _id: string;
   nom_fr: string;
   nom_ar: string;
+  mat_cnrps:string;
+  matricule:string;
   prenom_fr: string;
   prenom_ar: string;
   lieu_naissance_fr: string;
@@ -63,6 +67,8 @@ export interface Personnel {
   photo_profil: string;
   PhotoProfilFileExtension: string;
   PhotoProfilFileBase64String: string;
+  papers?:string[]
+  
 }
 export const personnelSlice = createApi({
   reducerPath: "Personnel",
@@ -97,6 +103,7 @@ export const personnelSlice = createApi({
         }),
         invalidatesTags: ["Personnel"],
       }),
+      
         deletePersonnel: builder.mutation<void, string>({
           query: (_id) => ({
             url: `delete-personnel/${_id}`,
@@ -104,6 +111,15 @@ export const personnelSlice = createApi({
           }),
           invalidatesTags: ["Personnel"],
         }),
+        getPersonnelById: builder.query<Personnel, string>({
+          query: (id) => ({
+            url: `get-personnel`,
+            method: "POST",
+            body: { personnelId: id }, // Adjust this to match your backend requirement
+          }),
+          providesTags: ["Personnel"],
+        }),
+        
     };
   },
 });
@@ -112,5 +128,6 @@ export const {
 useAddPersonnelMutation,
 useFetchPersonnelsQuery,
 useDeletePersonnelMutation,
-useUpdatePersonnelMutation
+useUpdatePersonnelMutation,
+useGetPersonnelByIdQuery
 } = personnelSlice;

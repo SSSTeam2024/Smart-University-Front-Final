@@ -12,7 +12,7 @@ import img4 from "assets/images/small/img-4.jpg";
 import avatar1 from "assets/images/users/avatar-1.jpg";
 import student from "assets/images/etudiant.png";
 import file from "assets/images/demande.png";
-import HeaderPDF from "Common/HeaderPDF";
+// import HeaderPDF from "Common/HeaderPDF";
 import FooterPDF from "Common/FooterPDF";
 import TitlePDF from "Common/TitlePDF";
 import BodyPDF from "Common/BodyPDF";
@@ -88,13 +88,13 @@ const PDF_REPORT = (props: any) => {
   return (
     <Document>
       <Page size="A4" style={[styles.body, styles.page]} wrap>
-        <View>
+        {/* <View>
         <HeaderPDF
           logo_etablissement={logo_etablissement}
           logo_republique={logo_republique}
           logo_universite={logo_universite}
         />
-        </View>
+        </View> */}
   
         <TitlePDF piece_demande={piece_demande} /> 
         <View style={{ flex: 2 }}>

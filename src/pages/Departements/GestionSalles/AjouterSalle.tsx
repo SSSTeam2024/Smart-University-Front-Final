@@ -5,6 +5,7 @@ import "flatpickr/dist/flatpickr.min.css";
 import Swal from "sweetalert2";
 import { useAddSalleMutation } from "features/salles/salles";
 import { useFetchDepartementsQuery } from "features/departement/departement";
+import CustomLoader from "Common/CustomLoader/CustomLoader";
 
 const AddSalle = () => {
   document.title = " Ajouter Salle | Application Smart Institute";
@@ -14,7 +15,7 @@ const AddSalle = () => {
     navigate("/departement/gestion-salles/liste-salles");
   }
 
-  const [createSalle] = useAddSalleMutation();
+  const [createSalle, requestStatus] = useAddSalleMutation();
   const { data: departements = [] } = useFetchDepartementsQuery();
 
   const [formData, setFormData] = useState({
@@ -56,7 +57,6 @@ const AddSalle = () => {
       [name]: value,
     });
   };
-  
 
   const onSubmitSalle = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -95,106 +95,117 @@ const AddSalle = () => {
     <React.Fragment>
       <div className="page-content">
         <Container fluid={true}>
-          <Row>
-            <Col lg={12}>
-              <Form className="tablelist-form" onSubmit={onSubmitSalle}>
-                <div
-                  id="alert-error-msg"
-                  className="d-none alert alert-danger py-2"
-                ></div>
-                <input type="hidden" id="id-field" />
-                <Row>
-                  <Col lg={3}>
-                    <div className="mb-3">
-                      <Form.Label htmlFor="salle">Salle</Form.Label>
-                      <Form.Control
-                        type="text"
-                        id="salle"
-                        placeholder=""
-                        required
-                        onChange={onChange}
-                        value={formData.salle}
-                      />
-                    </div>
-                  </Col>
+          {requestStatus.isLoading === true ? (
+            <CustomLoader text="Ajout en progression"></CustomLoader>
+          ) : (
+            <Row>
+              <Col lg={12}>
+                <Form className="tablelist-form" onSubmit={onSubmitSalle}>
+                  <div
+                    id="alert-error-msg"
+                    className="d-none alert alert-danger py-2"
+                  ></div>
+                  <input type="hidden" id="id-field" />
+                  <Row>
+                    <Col lg={3}>
+                      <div className="mb-3">
+                        <Form.Label htmlFor="salle">Salle</Form.Label>
+                        <Form.Control
+                          type="text"
+                          id="salle"
+                          placeholder=""
+                          required
+                          onChange={onChange}
+                          value={formData.salle}
+                        />
+                      </div>
+                    </Col>
 
-                  <Col lg={3}>
-                    <div className="mb-3">
-                      <Form.Label htmlFor="emplacement">Emplacement</Form.Label>
-                      <Form.Control
-                        type="text"
-                        id="emplacement"
-                        placeholder=""
-                        required
-                        onChange={onChange}
-                        value={formData.emplacement}
-                      />
-                    </div>
-                  </Col>
+                    <Col lg={3}>
+                      <div className="mb-3">
+                        <Form.Label htmlFor="emplacement">
+                          Emplacement
+                        </Form.Label>
+                        <Form.Control
+                          type="text"
+                          id="emplacement"
+                          placeholder=""
+                          onChange={onChange}
+                          value={formData.emplacement}
+                        />
+                      </div>
+                    </Col>
 
-                  <Col lg={3}>
-                    <div className="mb-3">
-                      <Form.Label htmlFor="typeSalle">Type Salle</Form.Label>
-                      <select
-                        className="form-select text-muted"
-                        name="typeSalle"
-                        id="typeSalle"
-                        value={formData.type_salle}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            type_salle: e.target.value,
-                          })
-                        }
+                    <Col lg={3}>
+                      <div className="mb-3">
+                        <Form.Label htmlFor="typeSalle">Type Salle</Form.Label>
+                        <select
+                          className="form-select text-muted"
+                          name="typeSalle"
+                          id="typeSalle"
+                          value={formData.type_salle}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              type_salle: e.target.value,
+                            })
+                          }
+                        >
+                          <option value="">Sélectionner Type Salle</option>
+                          <option value="Salle Cours">Salle Cours</option>
+                          <option value="Labo">Labo</option>
+                          <option value="Salle TD">Salle TD</option>
+                          <option value="Salle TD">Salle TP</option>
+                          <option value="Amphi">Amphi</option>
+                          <option value="Atelier">Atelier</option>
+                        </select>
+                      </div>
+                    </Col>
+                    <Col lg={3}>
+                      <div className="mb-3">
+                        <Form.Label htmlFor="departement">
+                          Departement
+                        </Form.Label>
+                        <select
+                          className="form-select text-muted"
+                          name="departement"
+                          id="departement"
+                          value={formData.departement.name_fr}
+                          onChange={handleChange}
+                        >
+                          <option value="">Sélectionner Département</option>
+                          {departements.map((departement) => (
+                            <option
+                              key={departement._id}
+                              value={departement._id}
+                            >
+                              {departement.name_fr}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </Col>
+                  </Row>
+
+                  <div className="modal-footer">
+                    <div className="hstack gap-2 justify-content-end">
+                      <Button
+                        className="btn-ghost-danger"
+                        onClick={() => {
+                          tog_retourParametres();
+                        }}
                       >
-                        <option value="Salle Cours">Salle Cours</option>
-                        <option value="Labo">Labo</option>
-                        <option value="Salle TD">Salle TD</option>
-                        <option value="Amphi">Amphi</option>
-                        <option value="Atelier">Atelier</option>
-                      </select>
+                        Retour
+                      </Button>
+                      <Button variant="success" id="add-btn" type="submit">
+                        Ajouter
+                      </Button>
                     </div>
-                  </Col>
-                  <Col lg={3}>
-                    <div className="mb-3">
-                      <Form.Label htmlFor="departement">Departement</Form.Label>
-                      <select
-                        className="form-select text-muted"
-                        name="departement"
-                        id="departement"
-                        value={formData.departement.name_fr}
-                        onChange={handleChange}
-                      >
-                        <option value="">Sélectionner Département</option>
-                        {departements.map((departement) => (
-                          <option key={departement._id} value={departement._id}>
-                            {departement.name_fr}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </Col>
-              
-                </Row>
-
-                <div className="modal-footer">
-                  <div className="hstack gap-2 justify-content-end">
-                    <Button
-                      className="btn-ghost-danger"
-                      onClick={() => {
-                        tog_retourParametres();
-                      }}
-                    >
-                      Retour
-                    </Button>
-                    <Button variant="success" id="add-btn" type="submit">
-                      Ajouter
-                    </Button>
                   </div>
-                </div>
-              </Form>
-            </Col>
-          </Row>
+                </Form>
+              </Col>
+            </Row>
+          )}
         </Container>
       </div>
     </React.Fragment>
