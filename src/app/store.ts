@@ -53,6 +53,8 @@ import { typeSeanceSlice } from "features/typeSeance/typeSeance";
 import { classePeriodSlice } from "features/classPeriod/classPeriod";
 import { teachersPeriodsSlice } from "features/teachersPeriods/teachersPeriods";
 import { rattrapageSlice } from "features/rattrapage/rattrapage";
+import { ficheVoeuxSlice } from "features/ficheVoeux/ficheVoeux";
+import { seanceSlice } from "features/seance/seance";
 
 export const store = configureStore({
     reducer: { 
@@ -101,8 +103,8 @@ export const store = configureStore({
     [classePeriodSlice.reducerPath]: classePeriodSlice.reducer,
     [teachersPeriodsSlice.reducerPath]: teachersPeriodsSlice.reducer,
     [rattrapageSlice.reducerPath]: rattrapageSlice.reducer,
-
-
+    [ficheVoeuxSlice.reducerPath]: ficheVoeuxSlice.reducer,
+    [seanceSlice.reducerPath]: seanceSlice.reducer,
 
       auth: authSlice,
       Layout: LayoutReducer,
@@ -157,6 +159,8 @@ export const store = configureStore({
         classePeriodSlice.middleware,
         teachersPeriodsSlice.middleware,
         rattrapageSlice.middleware,
+        ficheVoeuxSlice.middleware,
+        seanceSlice.middleware,
       ]
         
       );

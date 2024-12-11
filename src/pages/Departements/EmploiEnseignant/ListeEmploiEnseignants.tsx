@@ -18,12 +18,18 @@ import {
   useFetchClassesQuery,
 } from "features/classe/classe";
 import {
+  Enseignant,
   useFetchEnseignantsQuery,
   useFetchTeachersPeriodsQuery,
 } from "features/enseignant/enseignantSlice";
+import { actionAuthorization } from 'utils/pathVerification';
+import { RootState } from 'app/store';
+import { useSelector } from 'react-redux';
+import { selectCurrentUser } from 'features/account/authSlice';
 
 const ListeEmploiEnseignants = () => {
   document.title = "Liste emplois des enseigants | Smart University";
+  const user = useSelector((state: RootState) => selectCurrentUser(state));
 
   const navigate = useNavigate();
 
@@ -120,28 +126,32 @@ const ListeEmploiEnseignants = () => {
         Header: "Emploi",
         disableFilters: true,
         filterable: true,
-        accessor: (classe: Classe) => {
+        accessor:  (enseignant: Enseignant) => {
           return (
             <ul className="hstack gap-2 list-unstyled mb-0">
-              <li>
-                <Link
-                  to="/emplois-enseignant"
-                  className="badge bg-primary-subtle text-primary edit-item-btn"
-                  state={{ classe, semestre: "1" }}
-                >
-                  S1
-                </Link>
-              </li>
-              |
-              <li>
-                <Link
-                  to="/emplois-enseignant"
-                  className="badge bg-info-subtle text-info remove-item-btn"
-                  state={{ classe, semestre: "2" }}
-                >
-                  S2
-                </Link>
-              </li>
+              {actionAuthorization("/gestion-emplois/emlpoi-enseignant/single-emplois", user?.permissions!) ? (
+                <>
+                  <li>
+                    <Link
+                      to="/gestion-emplois/emlpoi-enseignant/single-emplois"
+                      className="badge bg-primary-subtle text-primary edit-item-btn"
+                      state={{ enseignant, semestre: "1" }}
+                    >
+                      S1
+                    </Link>
+                  </li>
+                  <span>|</span>
+                  <li>
+                    <Link
+                      to="/gestion-emplois/emlpoi-enseignant/single-emplois"
+                      className="badge bg-info-subtle text-info remove-item-btn"
+                      state={{ enseignant, semestre: "1" }}
+                    >
+                      S2
+                    </Link>
+                  </li>
+                </>
+              ) : null}
             </ul>
           );
         },

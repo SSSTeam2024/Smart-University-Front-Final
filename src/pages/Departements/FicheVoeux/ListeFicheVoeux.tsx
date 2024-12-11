@@ -21,7 +21,10 @@ import {
   useFetchFicheVoeuxsQuery,
 } from "features/ficheVoeux/ficheVoeux";
 import { Enseignant } from "features/enseignant/enseignantSlice";
-
+import { actionAuthorization } from 'utils/pathVerification';
+import { RootState } from 'app/store';
+import { useSelector } from 'react-redux';
+import { selectCurrentUser } from 'features/account/authSlice';
 interface Voeux {
   enseignant: Enseignant;
   voeux_s1: any;
@@ -30,6 +33,8 @@ interface Voeux {
 
 const ListFicheVoeux = () => {
   document.title = "Liste fiches des voeux enseignants | Smart University";
+  const user = useSelector((state: RootState) => selectCurrentUser(state));
+  
 
   const navigate = useNavigate();
   const [filePath, setFilePath] = useState<string | null>(null);
@@ -44,7 +49,7 @@ const ListFicheVoeux = () => {
   }
 
   function tog_AddMatiere() {
-    navigate("/gestion-fiche-voeux/add-fiche-voeux");
+    navigate("/gestion-emplois/gestion-fiche-voeux/add-fiche-voeux");
   }
   const { data = [], isSuccess } = useFetchFicheVoeuxsQuery();
 
@@ -178,8 +183,9 @@ const ListFicheVoeux = () => {
                 </Link>
               </li>
               <li>
+              {actionAuthorization("/gestion-emplois/gestion-fiche-voeux/edit-fiche-voeux",user?.permissions!)?
                 <Link
-                  to="/gestion-fiche-voeux/edit-fiche-voeux"
+                  to="/gestion-emplois/gestion-fiche-voeux/edit-fiche-voeux"
                   state={cellProps?.voeux_s1!}
                   className="badge bg-primary-subtle text-primary edit-item-btn"
                 >
@@ -197,7 +203,7 @@ const ListFicheVoeux = () => {
                       (e.currentTarget.style.transform = "scale(1)")
                     }
                   ></i>
-                </Link>
+                </Link> : <></> }
               </li>
               <li>
                 <Link
@@ -343,13 +349,14 @@ const ListFicheVoeux = () => {
 
                     <Col className="col-lg-auto ms-auto">
                       <div className="hstack gap-3">
+                      {actionAuthorization("/gestion-etudiant/compte-etudiant",user?.permissions!)?
                         <Button
                           variant="primary"
                           className="add-btn"
                           onClick={() => tog_AddMatiere()}
                         >
                           Ajouter fiche voeux
-                        </Button>
+                        </Button>: <></> }
                         {/* <Button
                           variant="primary"
                           className="add-btn"

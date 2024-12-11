@@ -48,6 +48,8 @@ const Navdata = () => {
   const [isEnseignant, setIsEnseignant] = useState(false);
   const [isPersonnel, setIsPersonnel] = useState(false);
   const [isDeaprtement, setIsDeaprtement] = useState(false);
+  const [isEmplois, setIsEmplois] = useState(false);
+  const [isRattrapage, setIsRattrapage] = useState(false);
   const [isConge, setIsConge] = useState(false);
   const [isModele, setIsModele] = useState(false);
   const [isLevel1, setIsLevel1] = useState(false);
@@ -55,6 +57,9 @@ const Navdata = () => {
   const [isLevel3, setIsLevel3] = useState(false);
   const [isLevel4, setIsLevel4] = useState(false);
   const [isLevel5, setIsLevel5] = useState(false);
+  const [isLevel6, setIsLevel6] = useState(false);
+  const [isLevel7, setIsLevel7] = useState(false);
+  const [isLevel8, setIsLevel8] = useState(false);
 
   const [iscurrentState, setIscurrentState] = useState("Dashboard");
 
@@ -154,6 +159,12 @@ const Navdata = () => {
     }
     if (iscurrentState !== "PapierAdministratif") {
       setIsPapier(false);
+    }
+    if (iscurrentState !== "Rattrapages") {
+      setIsRattrapage(false);
+    }
+    if (iscurrentState !== "Emplois") {
+      setIsEmplois(false);
     }
   }, [
     iscurrentState,
@@ -750,6 +761,131 @@ const Navdata = () => {
         },
       ],
     },
+
+  //gestion emploi
+  {
+    id: "emplois",
+    label: "Gestion Emplois",
+    icon: "bi bi-house-gear-fill",
+    link: "/#",
+    click: function (e: any) {
+      e.preventDefault();
+      setIsEmplois(!isEmplois);
+      setIscurrentState("Emplois");
+      updateIconSidebar(e);
+    },
+    stateVariables: isEmplois,
+    subItems: [
+      {
+        id: "emplois-enseignants",
+        label: "Emplois de Temps Enseignants",
+        icon: "bi bi-calendar-week-fill",
+        link: "/gestion-emplois/emlpoi-enseignant/liste-emplois",
+        isChildItem: true,
+        click: function (e: any) {
+          e.preventDefault();
+          setIsLevel5(!isLevel5);
+        },
+        stateVariables: isLevel5,
+        childItems: [
+          {
+            id: 1,
+            label: "Liste Des Emplois",
+            link: "/gestion-emplois/emlpoi-enseignant/liste-emplois",
+            icon: "bi bi-list-task",
+          },
+
+          {
+            id: 2,
+            label: "Equilibre horaires",
+            link: "/gestion-emplois/emlpoi-enseignant/tableau-charges-horaires",
+            icon: "bi bi-table",
+          },
+          // { id: 1, label: "Ajouter Un Département", link: "/gestion-departements/Ajout-departement",  icon: "bi bi-person-plus-fill"},
+        ],
+      },
+      {
+        id: "emplois-classes",
+        label: "Emplois de Temps Classes",
+        icon: "bi bi-calendar-week-fill",
+        link: "/gestion-emplois/emploi-classe/liste-emplois",
+        isChildItem: true,
+        click: function (e: any) {
+          e.preventDefault();
+          setIsLevel6(!isLevel6);
+        },
+        stateVariables: isLevel6,
+        childItems: [
+          {
+            id: 1,
+            label: "Liste Des Emplois",
+            link: "/gestion-emplois/emploi-classe/liste-emplois",
+            icon: "bi bi-list-task",
+          },
+        ],
+      },
+      {
+        id: "parametre-emploi",
+        label: "Parametres Des emplois",
+        link: "/gestion-emplois-classe/parametres-emplois-classe",
+        icon: "bi bi-gear-fill",
+      },
+      {
+        id: "ficheVoeux",
+        label: "Fiches des Voeux Enseignants",
+        icon: "bi bi-postcard-heart",
+        link: "/gestion-emplois/gestion-fiche-voeux/liste-fiche-voeux",
+        isChildItem: true,
+        click: function (e: any) {
+          e.preventDefault();
+          setIsLevel7(!isLevel7);
+        },
+        stateVariables: isLevel7,
+        childItems: [
+          {
+            id: 1,
+            label: "Liste Des Voeux",
+            link: "/gestion-emplois/gestion-fiche-voeux/liste-fiche-voeux",
+            icon: "bi bi-list-task",
+          },
+          
+        ],
+      },
+    ],
+  },
+
+  // gestion rattrapages
+  {
+    id: "Gestion-des-rattrapages",
+    label: "Gestion des Rattrapages",
+    link: "/#",
+    icon: "bi bi-calendar-event",
+    click: function (e: any) {
+      e.preventDefault();
+      setIsRattrapage(!isRattrapage);
+      setIscurrentState("Rattrapages");
+      updateIconSidebar(e);
+    },
+    stateVariables: isRattrapage,
+    subItems: [
+      {
+        id: "AjouterRattrapage",
+        label: "Ajouter un Rattrapage",
+        link: "/ajouter-rattrapage",
+        parentId: "Gestion-des-rattrapages",
+        icon: "bi bi-calendar2-plus",
+      },
+      {
+        id: "GestionRattrapages",
+        label: "Liste Des Rattrapages",
+        link: "/liste-rattrapages",
+        parentId: "Gestion-des-rattrapages",
+        icon: "bi bi-card-list",
+      },
+    ],
+  },
+
+
 
     //Gestion des congés
     {

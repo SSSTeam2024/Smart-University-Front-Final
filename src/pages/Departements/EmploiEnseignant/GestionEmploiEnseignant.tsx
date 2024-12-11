@@ -1,17 +1,209 @@
-import React, { useState } from "react";
-import { Col, Container, Form, Row } from "react-bootstrap";
-import { useLocation, useNavigate } from "react-router-dom";
+import React, { useEffect, useMemo, useState } from "react";
+import { Button, Card, Col, Container, Form, Row } from "react-bootstrap";
+import { Link, useLocation } from "react-router-dom";
 import "flatpickr/dist/flatpickr.min.css";
-import "./GestionEmploiEnseignant.css";
-
-import { useFetchClasseByIdQuery } from "features/classe/classe";
 import { useGetSeancesByIdTeacherAndSemestreQuery } from "features/seance/seance";
 
 import CustomLoader from "Common/CustomLoader/CustomLoader";
 import "jspdf-autotable";
-import { skipToken } from "@reduxjs/toolkit/query/react";
+import "../Emploi/GestionEmploiClasse.css";
+import {
+  Document,
+  Page,
+  pdf,
+  PDFDownloadLink,
+  StyleSheet,
+  Text,
+  View,
+} from "@react-pdf/renderer";
+import { useFetchVaribaleGlobaleQuery } from "features/variableGlobale/variableGlobaleSlice";
+import { useFetchTypeSeancesQuery } from "features/typeSeance/typeSeance";
 
-const GestionEmploiEnseignant = () => {
+const styles = StyleSheet.create({
+  page: {
+    padding: 10,
+  },
+  header: {
+    marginBottom: 20,
+    //borderBottomWidth: 1,
+    paddingBottom: 10,
+    margin: 20,
+  },
+
+  headerColumn: {
+    flex: 1,
+  },
+  headerCenter: {
+    flex: 2,
+    alignItems: "center",
+  },
+  headerTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+
+  periodicInfo: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    width: "100%",
+  },
+
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "flex-start",
+    marginBottom: 10,
+  },
+  leftColumn: {
+    alignItems: "flex-start",
+  },
+  headerText: {
+    fontSize: 10,
+    textAlign: "left",
+    marginBottom: 2,
+  },
+
+  timetable: {
+    marginTop: 20,
+    borderWidth: 1,
+    borderColor: "#000",
+  },
+  row: {
+    flexDirection: "row",
+    borderBottomWidth: 1,
+    borderColor: "#000",
+  },
+  cell: {
+    padding: 8,
+    borderRightWidth: 1,
+    borderColor: "#000",
+    textAlign: "center",
+    fontSize: 10,
+  },
+  dayCell: {
+    width: 100,
+    fontWeight: "bold",
+  },
+  sessionCell: {
+    flex: 1,
+    textAlign: "center",
+  },
+  emptyCell: {
+    flex: 1,
+    textAlign: "center",
+    color: "#888",
+  },
+
+  periodicDateContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginLeft: 40,
+  },
+  periodicDate: {
+    borderWidth: 1,
+    borderColor: "#000",
+    borderRadius: 5,
+    paddingVertical: 5,
+    paddingHorizontal: 15,
+    fontSize: 12,
+    textAlign: "center",
+    fontWeight: "bold",
+  },
+  courseLoadContainer: {
+    width: 200,
+    borderWidth: 1,
+    borderColor: "#000",
+    alignSelf: "flex-end",
+  },
+  courseLoadRow: {
+    flexDirection: "row",
+    borderBottomWidth: 1,
+    borderColor: "#000",
+  },
+  courseLoadHeader: {
+    fontWeight: "bold",
+    fontSize: 10,
+    flex: 1,
+    textAlign: "center",
+    paddingVertical: 2,
+    borderRightWidth: 1,
+    borderColor: "#000",
+  },
+  courseLoadCell: {
+    fontSize: 10,
+    flex: 1,
+    textAlign: "center",
+    paddingVertical: 2,
+    borderRightWidth: 1,
+    borderColor: "#000",
+  },
+  footerRow: {
+    flexDirection: "row",
+    justifyContent: "flex-start",
+    marginTop: 50,
+  },
+  footerRowTitle: {
+    flexDirection: "row",
+    justifyContent: "flex-start",
+    marginTop: 10,
+  },
+  centerColumn: {
+    alignItems: "center",
+  },
+  rightColumn: {
+    alignItems: "flex-end",
+  },
+  loadContainer: {
+    width: 200,
+    alignSelf: "flex-end",
+  },
+
+  footerText: {
+    fontSize: 12,
+    // textAlign: "center",
+    marginBottom: 2,
+    marginLeft: 85,
+  },
+  footerRightText: {
+    fontSize: 12,
+    // textAlign: "center",
+    marginBottom: 2,
+    marginLeft: 50,
+  },
+
+  enseignantFooterText: {
+    fontSize: 12,
+    // textAlign: "center",
+    marginBottom: 2,
+    marginLeft: 38,
+  },
+});
+
+interface Session {
+  heure_debut: string;
+  heure_fin: string;
+  matiere: {
+    matiere: string;
+  };
+  salle: {
+    salle: string;
+  };
+  classe: {
+    nom_classe_fr: string;
+  };
+}
+
+type GroupedSessions = {
+  [day: string]: Session[];
+};
+interface TimetablePDFProps {
+  days: string[];
+  groupedSessions: GroupedSessions;
+  maxSessions: number;
+}
+
+const SingleEmploiEnseignant = () => {
   document.title = " Gestion emploi enseignant | Application Smart Institute";
 
   const [canAddSession, setCanAddSession] = useState<boolean>(false);
@@ -19,34 +211,85 @@ const GestionEmploiEnseignant = () => {
   const [showAlert, setShowAlert] = useState(false);
   const [showAlertMessage, setAlertMessage] = useState("");
   const location = useLocation();
-  const { classe, semestre } = location.state || {};
+  const { enseignant, semestre } = location?.state! || {};
+  //console.log("enseignant", enseignant);
+  const { data: seances = [], isSuccess: sessionClassFetched } =
+    useGetSeancesByIdTeacherAndSemestreQuery({
+      enseignantId: enseignant?._id!,
+      semestre: semestre,
+    });
 
-  console.log("Location State:", location.state);
+  const { data: variableGlobales = [] } = useFetchVaribaleGlobaleQuery();
 
-  // Fetch seances for the selected teacher and semester
-  const { data: seances, isSuccess: sessionClassFetched } =
-    useGetSeancesByIdTeacherAndSemestreQuery(
-      classe?.enseignantId && semestre
-        ? { enseignantId: classe.enseignantId, semestre }
-        : skipToken
-    );
+  const { data: typeSeances = [] } = useFetchTypeSeancesQuery();
 
-  // Group seances by day
-  const groupedSessions = seances?.reduce((acc: any, session: any) => {
-    const day = session.jour; // Adjust field name if needed
-    acc[day] = acc[day] || [];
-    acc[day].push(session);
-    return acc;
-  }, {});
+  const typesFromSeances = useMemo(() => {
+    if (
+      !sessionClassFetched ||
+      seances.length === 0 ||
+      typeSeances.length === 0
+    ) {
+      return [];
+    }
 
-  const days = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
-  const maxSessions = 5; // Adjust based on your timetable structure
+    const matchedTypes = seances.flatMap((seance: any) => {
+      const typeMatiere = seance?.matiere?.type;
 
-  if (!classe || !semestre) return <div>Error: Missing data!</div>;
+      if (!typeMatiere) return [];
 
-  //   const filteredSessions = allSessions.filter(
-  //     (session) => session?.semestre! === classeDetails?.semestre!
-  //   );
+      // Find matching typeSeances based on abbreviation
+      const matches = typeSeances.filter(
+        (typeSeance: any) => typeSeance.abreviation === typeMatiere
+      );
+
+      return matches;
+    });
+    return matchedTypes;
+  }, [seances, typeSeances, sessionClassFetched]);
+
+  const [cours, setCours] = useState("");
+  const [tp, setTp] = useState("");
+  const [td, setTd] = useState("");
+  const [ci, setCi] = useState("");
+
+  useEffect(() => {
+    let tempCours = 0;
+    let tempTp = 0;
+    let tempTd = 0;
+    let tempCi = 0;
+
+    typesFromSeances.forEach((types: any) => {
+      seances.forEach((seance: any) => {
+        const heureDebut = new Date(`1970-01-01T${seance?.heure_debut}`);
+        const heureFin = new Date(`1970-01-01T${seance?.heure_fin}`);
+        const duration =
+          (heureFin.getTime() - heureDebut.getTime()) / (60 * 1000); // minutes
+
+        if (types?.abreviation === "C") {
+          tempCours = 1.83 * (duration / 60);
+        }
+        if (types?.abreviation === "CI") {
+          tempCi = 1.55 * (duration / 60);
+        }
+        if (types?.abreviation === "TP") {
+          tempTp = 0.86 * (duration / 60);
+        }
+        if (types?.abreviation === "TD") {
+          tempTd = 1 * (duration / 60);
+        }
+      });
+    });
+
+    // Update the state once after all calculations
+    setCours(tempCours.toFixed(2));
+    setTp(tempTp.toFixed(2));
+    setTd(tempTd.toFixed(2));
+    setCi(tempCi.toFixed(2));
+  }, [typesFromSeances, seances]);
+
+  const filteredSessions = seances?.filter(
+    (session) => session?.semestre! === semestre
+  );
 
   const timeSlotsDynamic: any = [];
   for (let i = 16; i < 38; i++) {
@@ -74,94 +317,254 @@ const GestionEmploiEnseignant = () => {
 
   const groupSessionsByDay = (sessions: any) => {
     const grouped: any = {};
+
+    // Group sessions by day
     sessions.forEach((session: any) => {
-      const {
-        _id,
-        jour,
-        heure_debut,
-        heure_fin,
-        matiere,
-        enseignant,
-        salle,
-        semestre,
-        hasBreak,
-        type_seance,
-      } = session;
+      const { jour, heure_debut, heure_fin, matiere, salle, classe } = session;
+
+      // Ensure each day exists as a key
       if (!grouped[jour]) {
         grouped[jour] = [];
       }
+
       grouped[jour].push({
-        _id,
-        jour,
-        semestre,
-        type_seance,
-        classe,
         heure_debut,
         heure_fin,
         matiere,
-        enseignant,
         salle,
-        hasBreak,
+        classe,
       });
     });
 
-    if (grouped["Lundi"]) {
-      grouped["Lundi"] = sortSessions(grouped["Lundi"]);
-    }
-    if (grouped["Mardi"]) {
-      grouped["Mardi"] = sortSessions(grouped["Mardi"]);
-    }
-    if (grouped["Mercredi"]) {
-      grouped["Mercredi"] = sortSessions(grouped["Mercredi"]);
-    }
-    if (grouped["Jeudi"]) {
-      grouped["Jeudi"] = sortSessions(grouped["Jeudi"]);
-    }
-    if (grouped["Vendredi"]) {
-      grouped["Vendredi"] = sortSessions(grouped["Vendredi"]);
-    }
-    if (grouped["Samedi"]) {
-      grouped["Samedi"] = sortSessions(grouped["Samedi"]);
-    }
+    // Sort sessions by time for each day
+    Object.keys(grouped).forEach((day) => {
+      grouped[day] = sortSessions(grouped[day]);
+    });
 
     return grouped;
   };
-  //const groupedSessions = groupSessionsByDay(filteredSessions);
 
-  //   const days = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
-  //   const maxSessions = Math.max(
-  //     ...days.map((day) =>
-  //       groupedSessions[day] ? groupedSessions[day].length : 0
-  //     )
-  //   );
-
-  //   let key = "";
-  //   if (classeDetails?.semestre === "1") {
-  //     key = "S1";
-  //   } else {
-  //     key = "S2";
-  //   }
-
-  //   let wishList: any[] = [];
-  //   for (let element of allVoeux) {
-  //     let consernedVoeux;
-  //     if (key === element.semestre) {
-  //       for (let v of element.fiche_voeux_classes) {
-  //         if (classe?._id === v.classe?._id) {
-  //           consernedVoeux = v;
-  //           wishList.push({
-  //             teacher: element.enseignant,
-  //             voeux: consernedVoeux,
-  //           });
-  //           break;
-  //         }
-  //       }
-  //     }
-  //   }
+  const groupedSessions = groupSessionsByDay(filteredSessions) || {};
+  // console.log("groupedSessions", groupedSessions);
+  const days = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
+  const maxSessions = Math.max(
+    ...days.map((day) =>
+      groupedSessions[day] ? groupedSessions[day].length : 0
+    )
+  );
 
   const closeAlert = () => {
     setShowAlert(false);
   };
+  const courseLoad = {
+    c: Number(cours),
+    ci: Number(ci),
+    tp: Number(tp),
+    td: Number(td),
+    total: Number(cours) + Number(ci) + Number(tp) + Number(td),
+  };
+  const currentDate = new Date();
+  const currentYear = currentDate.getFullYear();
+  const currentMonth = currentDate.getMonth(); // January = 0, December = 11
+
+  // Determine academic year based on September as the starting month
+  const startYear = currentMonth >= 8 ? currentYear : currentYear - 1; // August is 8
+  const endYear = startYear + 1;
+
+  const TimetablePDF: React.FC<TimetablePDFProps> = ({
+    days,
+    groupedSessions,
+    maxSessions,
+    // enseignant,
+  }) => (
+    <Document>
+      <Page size="A4" orientation="landscape" style={styles.page}>
+        {/* Header Section */}
+        <View style={styles.header}>
+          {/* Top Row */}
+          <View style={styles.headerRow}>
+            <View style={styles.headerColumn}>
+              <Text style={styles.headerText}>
+                {variableGlobales[2].universite_fr}
+              </Text>
+              <Text style={styles.headerText}>
+                {variableGlobales[2].etablissement_fr}
+              </Text>
+            </View>
+            <View style={styles.headerCenter}>
+              <Text style={styles.headerTitle}>
+                Emploi de temps pour enseignant
+              </Text>
+            </View>
+            <View style={styles.headerColumn}>
+              <Text style={styles.headerText}>
+                A.U: {startYear}/{endYear}
+              </Text>
+              <Text style={styles.headerText}>Semestre: {semestre}</Text>
+            </View>
+          </View>
+
+          {/* Middle Row */}
+
+          {/* Bottom Row */}
+          <View style={styles.headerRow}>
+            <View style={styles.leftColumn}>
+              <Text style={styles.headerText}>
+                Nom et Prénom:{" "}
+                <Text style={{ fontWeight: "bold", fontSize: "12" }}>
+                  {enseignant.nom_fr} {enseignant.prenom_fr}
+                </Text>
+              </Text>
+              <Text style={styles.headerText}>
+                Grade:{" "}
+                <Text style={{ fontWeight: "bold", fontSize: "12" }}>
+                  {enseignant?.grade?.grade_fr}
+                </Text>
+              </Text>
+            </View>
+            {/* Left: Periodic Date Section */}
+            <View style={styles.periodicDateContainer}>
+              <Text style={styles.periodicDate}>
+                Période: 09-09-2024 / 09-10-2024
+              </Text>
+            </View>
+
+            {/* Right: Course Load Table */}
+            <View style={styles.courseLoadContainer}>
+              <View style={styles.courseLoadRow}>
+                <Text style={styles.courseLoadHeader}>C</Text>
+                <Text style={styles.courseLoadHeader}>CI</Text>
+                <Text style={styles.courseLoadHeader}>TP</Text>
+                <Text style={styles.courseLoadHeader}>TD</Text>
+                <Text style={styles.courseLoadHeader}>TOTAL</Text>
+              </View>
+              <View style={styles.courseLoadRow}>
+                <Text style={styles.courseLoadCell}>{courseLoad.c || "0"}</Text>
+                <Text style={styles.courseLoadCell}>
+                  {courseLoad.ci || "0"}
+                </Text>
+                <Text style={styles.courseLoadCell}>
+                  {courseLoad.tp || "0"}
+                </Text>
+                <Text style={styles.courseLoadCell}>
+                  {courseLoad.td || "0"}
+                </Text>
+                <Text style={styles.courseLoadCell}>
+                  {courseLoad.total || "0"}
+                </Text>
+              </View>
+            </View>
+          </View>
+        </View>
+
+        {/* Timetable Section */}
+        <View style={styles.timetable}>
+          {days.map((day) => (
+            <View style={styles.row} key={day}>
+              {/* Day Column */}
+              <Text style={[styles.cell, styles.dayCell]}>
+                {day.charAt(0).toUpperCase() + day.slice(1)}
+              </Text>
+
+              {/* Sessions or "No Sessions" */}
+              {groupedSessions[day]?.length > 0 ? (
+                groupedSessions[day].map((session, index) => (
+                  <Text style={[styles.cell, styles.sessionCell]} key={index}>
+                    {session.heure_debut || "N/A"} -{" "}
+                    {session.heure_fin || "N/A"}
+                    {"\n"}
+                    {session.matiere?.matiere || "No Subject"} {"\n"}
+                    {session.salle?.salle || "No Room"} {"\n"}
+                    {session.classe?.nom_classe_fr || "No Class"}
+                  </Text>
+                ))
+              ) : (
+                <Text style={[styles.cell, styles.emptyCell]}>
+                  Pas de séances
+                </Text>
+              )}
+            </View>
+          ))}
+        </View>
+
+        <View style={styles.footerRow}>
+          <View style={styles.leftColumn}>
+            <Text style={styles.footerText}>Chef de département</Text>
+          </View>
+          {/* Left: Periodic Date Section */}
+          <View style={styles.periodicDateContainer}>
+            <Text style={styles.enseignantFooterText}>Enseignant</Text>
+          </View>
+
+          {/* Right: Course Load Table */}
+          <View style={styles.loadContainer}>
+            <View style={styles.footerRightText}>
+              <Text>Secrétaire Générale</Text>
+            </View>
+          </View>
+        </View>
+        <View style={styles.footerRowTitle}>
+          <View style={styles.leftColumn}>
+            <Text style={styles.footerText}>
+              {enseignant.departements.nom_chef_dep}
+            </Text>
+          </View>
+          {/* Left: Periodic Date Section */}
+          <View style={styles.periodicDateContainer}>
+            <Text style={styles.footerText}>
+              <Text>
+                {enseignant.nom_fr} {enseignant.prenom_fr}
+              </Text>
+            </Text>
+          </View>
+
+          {/* Right: Course Load Table */}
+          <View style={styles.loadContainer}>
+            <View style={styles.footerRightText}>
+              <Text>{variableGlobales[2].secretaire_fr}</Text>
+            </View>
+          </View>
+        </View>
+      </Page>
+    </Document>
+  );
+
+  const handlePrintPDF = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+
+    try {
+      if (Object.keys(groupedSessions).length === 0) {
+        throw new Error("No sessions found to generate PDF.");
+      }
+
+      const pdfInstance = pdf(
+        <TimetablePDF
+          days={days}
+          groupedSessions={groupedSessions}
+          maxSessions={maxSessions}
+        />
+      );
+      const pdfBlob = await pdfInstance.toBlob();
+
+      const url = URL.createObjectURL(pdfBlob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "emploiTempsEnseignant.pdf";
+      link.click();
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      setShowAlert(true);
+      setAlertMessage("Failed to generate PDF. Please try again.");
+    }
+  };
+
+  // console.log(
+  //   <TimetablePDF
+  //     days={days}
+  //     groupedSessions={groupedSessions}
+  //     maxSessions={maxSessions}
+  //   />
+  // );
 
   return (
     <React.Fragment>
@@ -197,58 +600,9 @@ const GestionEmploiEnseignant = () => {
                 ></div>
                 <input type="hidden" id="id-field" />
                 <Row className=" fw-bold titre-emploi">
-                  {/* {classeDetails.etat !== "Cloturé" ? (
-                    <div className="d-flex justify-content-between">
-                      <>
-                        {canAddSession === false ? (
-                          <Button
-                            variant="success"
-                            onClick={() => tog_AddSeanceModals()}
-                            className="add-btn"
-                            disabled={showForm === true}
-                          >
-                            {showForm === true ? (
-                              <CustomLoaderForButton></CustomLoaderForButton>
-                            ) : (
-                              <>
-                                <i className="bi bi-plus-circle me-1 align-middle"></i>
-                                Ajouter Séance
-                              </>
-                            )}
-                          </Button>
-                        ) : (
-                          <Button
-                            className="btn-danger"
-                            onClick={() => {
-                              closeAddSessionForm();
-                            }}
-                          >
-                            <i className="ri-close-line align-bottom me-1"></i>{" "}
-                            Fermer
-                          </Button>
-                        )}
-                      </>
-                      <>
-                        <Link
-                          to="/gestion-seances-classe"
-                          state={classeDetails}
-                        >
-                          <Button
-                            className="btn btn-soft-dark btn-border"
-                            onClick={() => {}}
-                          >
-                            <i className="ri-edit-2-line align-bottom me-1"></i>{" "}
-                            Gestion des séances
-                          </Button>
-                        </Link>
-                      </>
-                    </div>
-                  ) : (
-                    <></>
-                  )} */}
                   <h2 className="text-center">
-                    Emploi de Temps - {classe.nom_classe_fr} - Semestre{" "}
-                    {semestre}
+                    Emploi de Temps - {enseignant.prenom_fr} {enseignant.nom_fr}{" "}
+                    - Semestre {semestre}
                   </h2>
                 </Row>
                 {canAddSession === false ? (
@@ -265,21 +619,22 @@ const GestionEmploiEnseignant = () => {
                                   </td>
                                   {groupedSessions[day]?.length > 0 ? (
                                     <>
-                                      {groupedSessions[day].map(
+                                      {groupedSessions[day]?.map(
                                         (session: any, index: any) => (
                                           <td
                                             key={index}
                                             className="py-3 px-4 text-center"
                                           >
                                             <div className="fw-bold">
-                                              {session.heure_debut} -{" "}
-                                              {session.heure_fin}
+                                              {session?.heure_debut!} -{" "}
+                                              {session?.heure_fin!}
                                             </div>
-                                            <div>{session.matiere.matiere}</div>
-                                            <div>{session.salle.salle}</div>
                                             <div>
-                                              {session.enseignant.nom_fr}{" "}
-                                              {session.enseignant.prenom_fr}
+                                              {session?.matiere?.matiere!}
+                                            </div>
+                                            <div>{session?.salle?.salle!}</div>
+                                            <div>
+                                              {session?.classe?.nom_classe_fr!}{" "}
                                             </div>
                                           </td>
                                         )
@@ -287,7 +642,7 @@ const GestionEmploiEnseignant = () => {
                                       {[
                                         ...Array(
                                           maxSessions -
-                                            groupedSessions[day].length
+                                            groupedSessions[day]?.length
                                         ),
                                       ].map((_, idx) => (
                                         <td
@@ -319,411 +674,15 @@ const GestionEmploiEnseignant = () => {
                     ></CustomLoader>
                   )
                 ) : (
-                  <Row>
-                    {/* <Col lg={3} className="mt-5">
-                      <Card>
-                        <Card.Header className="d-flex align-items-center">
-                          <h5 className="card-title mb-0 flex-grow-1">
-                            Sélectionner Enseignant
-                          </h5>
-                          <div className="">
-                            <select
-                              className="form-select text-muted"
-                              name="etat_compte"
-                              id="etat_compte"
-                              value={formData.enseignant.nom_ar}
-                              onChange={handleChangeSelectedVoeuxEnseignant}
-                            >
-                              <option value="">Sélectionner Enseignant</option>
-                              {averageTeachers?.map((element) => {
-                                const annualMaxHE =
-                                  element?.teacher?.grade?.charge_horaire
-                                    ?.annualMaxHE || 0;
-
-                                const dynamicStyle = getStyle(
-                                  element?.hours!,
-                                  element?.teacher?.grade?.charge_horaire!,
-                                  classeDetails.semestre
-                                );
-
-                                return (
-                                  <option
-                                    key={element?.teacher?._id!}
-                                    value={element?.teacher?._id!}
-                                    className={dynamicStyle?.class!}
-                                    style={{
-                                      background: dynamicStyle?.bg!,
-                                      color: dynamicStyle?.textColor!,
-                                    }}
-                                  >
-                                    {`${element?.teacher?.prenom_fr!} ${element
-                                      ?.teacher
-                                      ?.nom_fr!}  ${element?.hours!}/${annualMaxHE}`}
-                                  </option>
-                                );
-                              })}
-                            </select>
-                          </div>
-                        </Card.Header>
-                        <Card.Body>
-                          <SimpleBar
-                            data-simplebar
-                            style={{ maxHeight: "440px" }}
-                          >
-                            <div className="w-100 d-flex justify-content-center fs-17">
-                              Liste des voeux
-                            </div>
-                            <div className="acitivity-timeline acitivity-main">
-                              <div className="acitivity-item d-flex">
-                                <div className="flex-shrink-0 acitivity-avatar"></div>
-                                <div className="flex-grow-1 ms-3">
-                                  <h6 className="mb-0 lh-base">Matières</h6>
-                                  {selectedVoeux?.map(
-                                    (matiere: any, index: number) => (
-                                      <p
-                                        className="text-muted mb-0"
-                                        key={index}
-                                      >
-                                        <strong>-</strong> {matiere.name}
-                                      </p>
-                                    )
-                                  )}
-                                </div>
-                              </div>
-                              <div className="acitivity-item py-3 d-flex">
-                                <div className="flex-shrink-0">
-                                  <div className="acitivity-avatar"></div>
-                                </div>
-                                <div className="flex-grow-1 ms-3">
-                                  <h6 className="mb-0 lh-base">Jours</h6>
-                                  {selectedJourVoeux?.map(
-                                    (jour: any, index: number) => (
-                                      <p
-                                        className="mb-2 text-muted"
-                                        key={index}
-                                      >
-                                        {jour.jour} | {jour.temps}
-                                      </p>
-                                    )
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          </SimpleBar>
-                        </Card.Body>
-                      </Card>
-                    </Col>
-                    <Col lg={9} className="mt-5">
-                      <Form className="tablelist-form">
-                        <Row className="mb-3">
-                          <h5
-                            className="modal-title fs-18"
-                            id="exampleModalLabel"
-                          >
-                            Ajouter Séance
-                          </h5>
-                        </Row>
-
-                        <Row>
-                          <Row>
-                            <div
-                              id="alert-error-msg"
-                              className="d-none alert alert-danger py-2"
-                            ></div>
-                            <input type="hidden" id="id-field" />
-                            <Col lg={4}>
-                              <div className="mb-3">
-                                <Form.Label htmlFor="matiere">
-                                  Matière
-                                </Form.Label>
-                                <select
-                                  className="form-select text-muted"
-                                  name="matiere"
-                                  id="matiere"
-                                  value={formData?.matiere}
-                                  onChange={handleChangeFiltredMatiere}
-                                  onClick={(e) => {
-                                    if (formData.enseignant.nom_fr === "") {
-                                      showSelectionWarning(
-                                        "Veuillez sélectionner un enseignant à partir du liste des voeux!"
-                                      );
-                                    }
-                                  }}
-                                >
-                                  <option value="">Sélectionner Matière</option>
-                                  {selectedVoeux?.map((mat: any) => (
-                                    <option key={mat.id} value={mat.id}>
-                                      {mat.name}
-                                    </option>
-                                  ))}
-                                </select>
-                              </div>
-                            </Col>
-                            <Col lg={4}>
-                              <div className="mb-3 d-flex flex-column">
-                                <Form.Label htmlFor="semestre">
-                                  Type Séance
-                                </Form.Label>
-                                <div
-                                  className="btn-group"
-                                  role="group"
-                                  aria-label="Basic radio toggle button group"
-                                >
-                                  <input
-                                    type="radio"
-                                    className="btn-check"
-                                    name="btnradio"
-                                    id="btnradio1"
-                                    autoComplete="off"
-                                    checked={formData.type_seance === "1"}
-                                    onChange={() => {
-                                      if (formData.matiere === "") {
-                                        showSelectionWarning(
-                                          "Veuillez sélectionner une matière d'abord!"
-                                        );
-                                      } else {
-                                        setFormData({
-                                          ...formData,
-                                          type_seance: "1",
-                                          jour: "",
-                                        });
-                                      }
-                                    }}
-                                  />
-                                  <label
-                                    className="btn btn-outline-secondary"
-                                    htmlFor="btnradio1"
-                                  >
-                                    Ordinaire
-                                  </label>
-
-                                  <input
-                                    type="radio"
-                                    className="btn-check"
-                                    name="btnradio"
-                                    id="btnradio2"
-                                    autoComplete="off"
-                                    checked={formData.type_seance === "1/15"}
-                                    onChange={() => {
-                                      if (formData.matiere === "") {
-                                        showSelectionWarning(
-                                          "Veuillez sélectionner une matière d'abord!"
-                                        );
-                                      } else {
-                                        setFormData({
-                                          ...formData,
-                                          type_seance: "1/15",
-                                          jour: "",
-                                        });
-                                      }
-                                    }}
-                                  />
-                                  <label
-                                    className="btn btn-outline-secondary"
-                                    htmlFor="btnradio2"
-                                  >
-                                    Par quinzaine
-                                  </label>
-                                </div>
-                              </div>
-                            </Col>
-                            <Col lg={4}>
-                              <div className="mb-3">
-                                <Form.Label htmlFor="jour">Jour</Form.Label>
-                                <select
-                                  className="form-select"
-                                  name="jour"
-                                  id="jour"
-                                  onChange={selectChangeJour}
-                                  value={formData.jour}
-                                  onClick={(e) => {
-                                    if (formData.type_seance === "") {
-                                      showSelectionWarning(
-                                        "Veuillez sélectionner un type de séance d'abord!"
-                                      );
-                                    }
-                                  }}
-                                >
-                                  <option value="">Sélectionner Jour</option>
-                                  {formData.matiere !== "" ? (
-                                    availableDays.map((day) => (
-                                      <>
-                                        {day.time === "" ? (
-                                          <option
-                                            value={day.day}
-                                            style={{
-                                              background: "#9B7EBD",
-                                              color: "#fff",
-                                            }}
-                                          >
-                                            {day.day}
-                                          </option>
-                                        ) : (
-                                          <option
-                                            value={day.day}
-                                            style={{
-                                              background: "#D4BEE4",
-                                              fontWeight: "bold",
-                                            }}
-                                          >
-                                            {day.day + " | " + day.time}
-                                          </option>
-                                        )}
-                                      </>
-                                    ))
-                                  ) : (
-                                    <></>
-                                  )}
-                                </select>
-                              </div>
-                            </Col>
-                          </Row>
-                          <Row>
-                            <Col lg={8}>
-                              {formData.jour != "" ? (
-                                <TimeRange
-                                  error={error}
-                                  ticksNumber={132}
-                                  selectedInterval={[
-                                    selectedStart,
-                                    selectedEnd,
-                                  ]}
-                                  timelineInterval={[startTime, endTime]}
-                                  onUpdateCallback={errorHandler}
-                                  onChangeCallback={onChangeCallback}
-                                  disabledIntervals={disabledIntervals}
-                                  step={5 * 60 * 1000}
-                                  formatTick={(ms) =>
-                                    new Date(ms).toLocaleTimeString([], {
-                                      hour: "2-digit",
-                                      minute: "2-digit",
-                                    })
-                                  }
-                                />
-                              ) : (
-                                <></>
-                              )}
-                            </Col>
-                            <Col lg={2}>
-                              <div className="mb-3">
-                                <Form.Label htmlFor="heure_debut">
-                                  Heure début
-                                </Form.Label>
-                                <Flatpickr
-                                  className="form-control"
-                                  id="heure_debut"
-                                  placeholder="--:--"
-                                  options={{
-                                    enableTime: false,
-                                    noCalendar: true,
-                                    dateFormat: "H:i",
-                                    onOpen: (
-                                      selectedDates,
-                                      dateStr,
-                                      instance
-                                    ) => instance.close(),
-                                    time_24hr: true,
-                                  }}
-                                  value={formData.heure_debut}
-                                />
-                              </div>
-                            </Col>
-
-                            <Col lg={2}>
-                              <div className="mb-3">
-                                <Form.Label htmlFor="heure_fin">
-                                  Heure fin
-                                </Form.Label>
-                                <Flatpickr
-                                  className="form-control"
-                                  id="heure_fin"
-                                  placeholder="--:--"
-                                  readOnly={true}
-                                  options={{
-                                    enableTime: false,
-                                    noCalendar: true,
-                                    onOpen: (
-                                      selectedDates,
-                                      dateStr,
-                                      instance
-                                    ) => instance.close(),
-                                    dateFormat: "H:i",
-                                    time_24hr: true,
-                                  }}
-                                  value={formData.heure_fin}
-                                />
-                              </div>
-                            </Col>
-                          </Row>
-                          <Row className="mt-5">
-                            <Col lg={6}>
-                              {disponibiliteSalles.length === 0 ? (
-                                <div className="d-flex flex-column">
-                                  <Button
-                                    variant="secondary"
-                                    onClick={handleFetchDisponibiliteSalles}
-                                    disabled={formData.heure_fin === ""}
-                                  >
-                                    {roomsAvailabilityRequestStatus.isLoading ===
-                                    true ? (
-                                      <CustomLoaderForButton></CustomLoaderForButton>
-                                    ) : (
-                                      <>Salles disponibles?</>
-                                    )}
-                                  </Button>
-                                </div>
-                              ) : (
-                                <div className="mb-3">
-                                  {" "}
-                                  <select
-                                    className="form-select text-muted"
-                                    name="etat_compte"
-                                    id="etat_compte"
-                                    value={formData?.salle}
-                                    onChange={handleChangeSalle}
-                                  >
-                                    <option value="">Sélectionner Salle</option>
-                                    {disponibiliteSalles.map(
-                                      (salleDisponible) => (
-                                        <option
-                                          key={salleDisponible._id}
-                                          value={salleDisponible._id}
-                                        >
-                                          {salleDisponible.salle}
-                                        </option>
-                                      )
-                                    )}
-                                  </select>
-                                </div>
-                              )}
-                            </Col>
-                            <Col lg={6}>
-                              <div className="d-flex flex-column">
-                                <Button
-                                  variant="primary"
-                                  id="add-btn"
-                                  onClick={() => {
-                                    onSubmitSeance();
-                                  }}
-                                  disabled={formData.salle === ""}
-                                >
-                                  {sessionCreationRequestStatus.isLoading ===
-                                  true ? (
-                                    <CustomLoaderForButton></CustomLoaderForButton>
-                                  ) : (
-                                    <>Ajouter Séance</>
-                                  )}
-                                </Button>
-                              </div>
-                            </Col>
-                          </Row>
-                        </Row>
-                      </Form>
-                    </Col> */}
-                  </Row>
+                  <Row></Row>
                 )}
 
-                <div className="modal-footer"></div>
+                <div className="modal-footer">
+                  {" "}
+                  <Button variant="dark" onClick={handlePrintPDF}>
+                    Print/Download PDF
+                  </Button>
+                </div>
               </Form>
             </Col>
           </Row>
@@ -733,4 +692,4 @@ const GestionEmploiEnseignant = () => {
   );
 };
 
-export default GestionEmploiEnseignant;
+export default SingleEmploiEnseignant;

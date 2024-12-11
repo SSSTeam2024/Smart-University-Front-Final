@@ -22,13 +22,206 @@ import TimeRange from "@harveyconnor/react-timeline-range-slider";
 import { useGetTeachersPeriodsMutation } from "features/teachersPeriods/teachersPeriods";
 import { Enseignant } from "features/enseignant/enseignantSlice";
 import CustomLoader from "Common/CustomLoader/CustomLoader";
-import jsPDF from "jspdf";
 import "jspdf-autotable";
+import {
+  pdf,
+  StyleSheet,
+  Document,
+  Page,
+  View,
+  Text,
+} from "@react-pdf/renderer";
+import { useFetchVaribaleGlobaleQuery } from "features/variableGlobale/variableGlobaleSlice";
 
-const GestionEmploiClasse = () => {
+const styles = StyleSheet.create({
+  page: {
+    padding: 10,
+  },
+  header: {
+    marginBottom: 20,
+    //borderBottomWidth: 1,
+    paddingBottom: 10,
+    margin: 20,
+  },
+
+  headerColumn: {
+    flex: 1,
+  },
+  headerCenter: {
+    flex: 2,
+    alignItems: "center",
+  },
+  headerTitle: {
+    fontSize: 15,
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+
+  periodicInfo: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    width: "100%",
+  },
+
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "flex-start",
+    // marginBottom: 10,
+  },
+  leftColumn: {
+    alignItems: "flex-start",
+  },
+  headerText: {
+    fontSize: 10,
+    textAlign: "left",
+    marginBottom: 2,
+  },
+
+  timetable: {
+    // marginTop: 0,
+    borderWidth: 1,
+    borderColor: "#000",
+  },
+  row: {
+    flexDirection: "row",
+    borderBottomWidth: 1,
+    borderColor: "#000",
+  },
+  cell: {
+    padding: 8,
+    borderRightWidth: 1,
+    borderColor: "#000",
+    textAlign: "center",
+    fontSize: 10,
+  },
+  dayCell: {
+    width: 60,
+    fontWeight: "bold",
+  },
+  sessionCell: {
+    flex: 1,
+    textAlign: "center",
+  },
+  emptyCell: {
+    flex: 1,
+    textAlign: "center",
+    color: "#888",
+  },
+
+  periodicDateContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  periodicDate: {
+    borderWidth: 1,
+    borderColor: "#000",
+    borderRadius: 5,
+    paddingVertical: 5,
+    paddingHorizontal: 15,
+    fontSize: 10,
+    textAlign: "center",
+    fontWeight: "bold",
+  },
+  courseLoadContainer: {
+    width: 200,
+    borderWidth: 1,
+    borderColor: "#000",
+    alignSelf: "flex-end",
+  },
+  courseLoadRow: {
+    flexDirection: "row",
+    borderBottomWidth: 1,
+    borderColor: "#000",
+  },
+  courseLoadHeader: {
+    fontWeight: "bold",
+    fontSize: 10,
+    flex: 1,
+    textAlign: "center",
+    paddingVertical: 2,
+    borderRightWidth: 1,
+    borderColor: "#000",
+  },
+  courseLoadCell: {
+    fontSize: 10,
+    flex: 1,
+    textAlign: "center",
+    paddingVertical: 2,
+    borderRightWidth: 1,
+    borderColor: "#000",
+  },
+  footerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 10,
+  },
+  footerText: {
+    fontSize: 11,
+    marginBottom: 2,
+  },
+  footerRightText: {
+    fontSize: 11,
+    textAlign: "right",
+    marginBottom: 2,
+  },
+  footerleftColumn: {
+    flex: 1,
+    justifyContent: "flex-start",
+    marginLeft: 20,
+  },
+  rightColumn: {
+    flex: 1,
+    justifyContent: "flex-end",
+    alignItems: "flex-end",
+    marginRight: 20,
+  },
+  typeSeance: {
+    backgroundColor: "grey",
+    color: "white",
+    position: "absolute",
+    bottom: 10,
+    right: 10,
+    padding: 5,
+    borderRadius: 5,
+    textAlign: "right",
+    marginTop: 5,
+  },
+});
+
+interface Session {
+  heure_debut: string;
+  heure_fin: string;
+  matiere: {
+    matiere: string;
+  };
+  salle: {
+    salle: string;
+  };
+  classe: {
+    nom_classe_fr: string;
+  };
+  enseignant: {
+    prenom_fr: string;
+    nom_fr: string;
+  };
+  type_seance: string;
+}
+
+type GroupedSessions = {
+  [day: string]: Session[];
+};
+interface TimetablePDFProps {
+  days: string[];
+  groupedSessions: GroupedSessions;
+  maxSessions: number;
+}
+
+const SingleEmploiClasse = () => {
   document.title = " Gestion emploi classe | Application Smart Institute";
   const { data: paramsData = [] } = useFetchTimeTableParamsQuery();
-
+  const { data: variableGlobales = [] } = useFetchVaribaleGlobaleQuery();
   const convertTimeStringToMs = (timeString: string) => {
     const [hours, minutes] = timeString.split(":").map(Number);
     const now = new Date();
@@ -199,7 +392,7 @@ const GestionEmploiClasse = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const classeDetails = location.state;
-  console.log("classeDetails gestion emploi classe", classeDetails);
+
   const [createSeance, sessionCreationRequestStatus] = useAddSeanceMutation();
   const [getSessionsByTeacherId] = useGetSeancesByTeacherMutation();
   const [getTeachersPeriods] = useGetTeachersPeriodsMutation();
@@ -208,6 +401,7 @@ const GestionEmploiClasse = () => {
   const { data: classe } = useFetchClasseByIdQuery(
     classeDetails?.id_classe?._id
   );
+  console.log("classe gestion emploi classe", classe);
   const { data: allSessions = [], isSuccess: sessionClassFetched } =
     useFetchAllSeancesByTimeTableIdQuery(classeDetails?._id!);
   console.log(allSessions);
@@ -426,8 +620,6 @@ const GestionEmploiClasse = () => {
       }
     }
   }
-
-  console.log("wishList", wishList);
 
   const selectChangeJour = async (
     event: React.ChangeEvent<HTMLSelectElement>
@@ -1222,6 +1414,13 @@ const GestionEmploiClasse = () => {
       setAlertMessage("");
     }, 7000);
   };
+  const currentDate = new Date();
+  const currentYear = currentDate.getFullYear();
+  const currentMonth = currentDate.getMonth(); // January = 0, December = 11
+
+  // Determine academic year based on September as the starting month
+  const startYear = currentMonth >= 8 ? currentYear : currentYear - 1; // August is 8
+  const endYear = startYear + 1;
 
   const getStyle = (
     teaching_Hours: string,
@@ -1301,7 +1500,145 @@ const GestionEmploiClasse = () => {
     }
     return { class: className, bg: background, textColor: textColor };
   };
+  const TimetablePDF: React.FC<TimetablePDFProps> = ({
+    days,
+    groupedSessions,
+    maxSessions,
+    //enseignant,
+  }) => (
+    <Document>
+      <Page size="A4" orientation="landscape" style={styles.page}>
+        {/* Header Section */}
+        <View style={styles.header}>
+          {/* Top Row */}
+          <View style={styles.headerRow}>
+            <View style={styles.headerColumn}>
+              <Text style={styles.headerText}>
+                {variableGlobales[2].universite_fr}
+              </Text>
+              <Text style={styles.headerText}>
+                {variableGlobales[2].etablissement_fr}
+              </Text>
+            </View>
+            <View style={styles.headerCenter}>
+              <Text style={styles.headerTitle}>
+                Emploi de temps {classeDetails?.id_classe?.nom_classe_fr!}
+              </Text>
+            </View>
+            <View style={styles.headerColumn}>
+              <Text style={styles.headerText}>
+                A.U: {startYear}/{endYear}
+              </Text>
+              <Text style={styles.headerText}>
+                Semestre: {classeDetails.semestre}
+              </Text>
+              <Text style={styles.headerText}>
+                Période: {classeDetails?.date_debut!} /{" "}
+                {classeDetails?.date_fin!}
+              </Text>
+            </View>
+          </View>
 
+          {/* Middle Row */}
+
+          {/* Bottom Row */}
+          {/* <View style={styles.headerRow}>
+           
+            <View style={styles.periodicDateContainer}>
+              <Text style={styles.periodicDate}>
+                Période: {classeDetails?.date_debut!} /{" "}
+                {classeDetails?.date_fin!}
+              </Text>
+            </View>
+          </View> */}
+        </View>
+
+        {/* Timetable Section */}
+        <View style={styles.timetable}>
+          {days.map((day) => (
+            <View style={styles.row} key={day}>
+              {/* Day Column */}
+              <Text style={[styles.cell, styles.dayCell]}>
+                {day.charAt(0).toUpperCase() + day.slice(1)}
+              </Text>
+
+              {/* Sessions or "No Sessions" */}
+              {groupedSessions[day]?.length > 0 ? (
+                groupedSessions[day].map((session, index) => (
+                  <Text style={[styles.cell, styles.sessionCell]} key={index}>
+                    {session.heure_debut || "N/A"} -{" "}
+                    {session.heure_fin || "N/A"}
+                    {"\n"}
+                    {session.matiere?.matiere || "No Subject"} {"\n"}
+                    {session.salle?.salle || "No Room"} {"\n"}
+                    {session.enseignant.prenom_fr} {session.enseignant.nom_fr}
+                    {"\n"}
+                    {session.type_seance !== "1" && (
+                      <Text style={styles.typeSeance}>
+                        {session.type_seance}
+                      </Text>
+                    )}
+                  </Text>
+                ))
+              ) : (
+                <Text style={[styles.cell, styles.emptyCell]}>
+                  Pas de séances
+                </Text>
+              )}
+            </View>
+          ))}
+        </View>
+
+        <View style={styles.footerRow}>
+          {/* Left Column */}
+          <View style={styles.footerleftColumn}>
+            <Text style={styles.footerText}>Chef de département</Text>
+            <Text style={styles.footerText}>
+              {classe?.departement?.nom_chef_dep!}
+            </Text>
+          </View>
+
+          {/* Right Column */}
+          <View style={styles.rightColumn}>
+            <Text style={styles.footerRightText}>Secrétaire Générale</Text>
+            <Text style={styles.footerRightText}>
+              {variableGlobales[2].secretaire_fr}
+            </Text>
+          </View>
+        </View>
+      </Page>
+    </Document>
+  );
+
+  const handlePrintPDF = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+
+    try {
+      if (Object.keys(groupedSessions).length === 0) {
+        throw new Error("No sessions found to generate PDF.");
+      }
+
+      const pdfInstance = pdf(
+        <TimetablePDF
+          days={days}
+          groupedSessions={groupedSessions}
+          maxSessions={maxSessions}
+          //enseignant={}
+        />
+      );
+      const pdfBlob = await pdfInstance.toBlob();
+
+      const url = URL.createObjectURL(pdfBlob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "emploiTempsClasse.pdf";
+      link.click();
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      setShowAlert(true);
+      setAlertMessage("Failed to generate PDF. Please try again.");
+    }
+  };
   return (
     <React.Fragment>
       <div className="page-content">
@@ -1811,7 +2148,7 @@ const GestionEmploiClasse = () => {
                                   onChangeCallback={onChangeCallback}
                                   disabledIntervals={disabledIntervals}
                                   step={5 * 60 * 1000}
-                                  formatTick={(ms: any) =>
+                                  formatTick={(ms) =>
                                     new Date(ms).toLocaleTimeString([], {
                                       hour: "2-digit",
                                       minute: "2-digit",
@@ -1941,7 +2278,15 @@ const GestionEmploiClasse = () => {
                   </Row>
                 )}
 
-                <div className="modal-footer"></div>
+                <div className="modal-footer">
+                  <Button
+                    variant="dark"
+                    style={{ height: "50px", marginBottom: "10px" }}
+                    onClick={handlePrintPDF}
+                  >
+                    Print/Download PDF
+                  </Button>
+                </div>
               </Form>
             </Col>
           </Row>
@@ -1951,4 +2296,4 @@ const GestionEmploiClasse = () => {
   );
 };
 
-export default GestionEmploiClasse;
+export default SingleEmploiClasse;

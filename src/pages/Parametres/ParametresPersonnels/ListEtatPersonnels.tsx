@@ -1,26 +1,27 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Button,
   Card,
   Col,
   Container,
+  Form,
+  Modal,
   Row,
 } from "react-bootstrap";
 import Breadcrumb from "Common/BreadCrumb";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import TableContainer from "Common/TableContainer";
 import Swal from "sweetalert2";
-import { EtatPersonnel, useDeleteEtatPersonnelMutation, useFetchEtatsPersonnelQuery } from "features/etatPersonnel/etatPersonnelSlice";
-import { actionAuthorization } from 'utils/pathVerification';
-import { RootState } from 'app/store';
-import { useSelector } from 'react-redux';
-import { selectCurrentUser } from 'features/account/authSlice'; 
-
+import {
+  EtatPersonnel,
+  useAddEtatPersonnelMutation,
+  useDeleteEtatPersonnelMutation,
+  useFetchEtatsPersonnelQuery,
+  useUpdateEtatPersonnelMutation,
+} from "features/etatPersonnel/etatPersonnelSlice";
 
 const ListEtatPersonnels = () => {
-  document.title =
-    "Liste états des personnels | Smart University";
-    const user = useSelector((state: RootState) => selectCurrentUser(state));
+  document.title = "Liste états des personnels | Smart University";
 
   const navigate = useNavigate();
 
@@ -29,12 +30,29 @@ const ListEtatPersonnels = () => {
   function tog_AddParametreModals() {
     setmodal_AddParametreModals(!modal_AddParametreModals);
   }
+  const [searchQuery, setSearchQuery] = useState("");
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(event.target.value.toLowerCase());
+  };
+  const { data = [] } = useFetchEtatsPersonnelQuery();
 
+  const filteredEtatComptesPersonnels = useMemo(() => {
+    let result = data;
+    if (searchQuery) {
+      result = result.filter((etatComptePersonnel) =>
+        [etatComptePersonnel.etat_ar, etatComptePersonnel.etat_fr].some(
+          (value) => value && value.toLowerCase().includes(searchQuery)
+        )
+      );
+    }
+
+    return result;
+  }, [data, searchQuery]);
 
   function tog_AddEtatPersonnelModals() {
-    navigate("/parametre-personnel/etat/add-etat-personnel");
+    navigate("/parametre/add-etat-personnel");
   }
-  const { data = [] } = useFetchEtatsPersonnelQuery();
+
   const [deleteEtatPersonnel] = useDeleteEtatPersonnelMutation();
 
   const swalWithBootstrapButtons = Swal.mixin({
@@ -45,136 +63,215 @@ const ListEtatPersonnels = () => {
     buttonsStyling: false,
   });
   const AlertDelete = async (_id: string) => {
-  
     swalWithBootstrapButtons
-    .fire({
-      title: "Êtes-vous sûr?",
-      text: "Vous ne pourrez pas revenir en arrière!",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Oui, supprimez-le!",
-      cancelButtonText: "Non, annuler!",
-      reverseButtons: true,
-    })
-    .then((result) => {
-      if (result.isConfirmed) {
-        deleteEtatPersonnel(_id);
-        swalWithBootstrapButtons.fire(
-          "Supprimé!",
-          "L'état compte personnel a été supprimé.",
-          "success"
-        );
-      } else if (result.dismiss === Swal.DismissReason.cancel) {
-        swalWithBootstrapButtons.fire(
-          "Annulé",
-          "L'état compte personnel est en sécurité :)",
-          "error"
-        );
-      }
-    });
-  }
-
+      .fire({
+        title: "Êtes-vous sûr?",
+        text: "Vous ne pourrez pas revenir en arrière!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Oui, supprimez-le!",
+        cancelButtonText: "Non, annuler!",
+        reverseButtons: true,
+      })
+      .then((result) => {
+        if (result.isConfirmed) {
+          deleteEtatPersonnel(_id);
+          swalWithBootstrapButtons.fire(
+            "Supprimé!",
+            "L'état compte personnel a été supprimé.",
+            "success"
+          );
+        } else if (result.dismiss === Swal.DismissReason.cancel) {
+          swalWithBootstrapButtons.fire(
+            "Annulé",
+            "L'état compte personnel est en sécurité :)",
+            "error"
+          );
+        }
+      });
+  };
 
   const columns = useMemo(
     () => [
-        {
-            Header: (<div className="form-check"> <input className="form-check-input" type="checkbox" id="checkAll" value="option" /> </div>),
-            Cell: (cellProps: any) => {
-                return (<div className="form-check"> <input className="form-check-input" type="checkbox" name="chk_child" defaultValue="option1" /> </div>);
-            },
-            id: '#',
-        },
-      
-        {
-            Header: "Value",
-            accessor: "value",
-            disableFilters: true,
-            filterable: true,
-        },
-       
-        {
-            Header: "Etat Compte Personnel",
-            accessor: "etat_fr",
-            disableFilters: true,
-            filterable: true,
-        },
-        {
-            Header: "حالة حساب الإداري",
-            accessor: "etat_ar",
-            disableFilters: true,
-            filterable: true,
-        },
-       
-        {
-            Header: "Action",
-            disableFilters: true,
-            filterable: true,
-            accessor: (etatPersonnel: EtatPersonnel) => {
-                return (
-                    <ul className="hstack gap-2 list-unstyled mb-0">
-                  {actionAuthorization("/parametre-personnel/etat/edit-etat-personnel",user?.permissions!)?
+      {
+        Header: "Etat Compte Personnel",
+        accessor: "etat_fr",
+        disableFilters: true,
+        filterable: true,
+      },
+      {
+        Header: "حالة حساب الإداري",
+        accessor: "etat_ar",
+        disableFilters: true,
+        filterable: true,
+      },
 
-                      <li>
-                        <Link
-                          to="/parametre-personnel/etat/edit-etat-personnel"
-                          state={etatPersonnel}
-                          className="badge bg-primary-subtle text-primary edit-item-btn"
-                    
-                        >
-                          <i
-                            className="ph ph-pencil-line"
-                            style={{
-                              transition: "transform 0.3s ease-in-out",
-                              cursor: "pointer",
-                              fontSize: "1.5em",
-                            }}
-                            onMouseEnter={(e) =>
-                              (e.currentTarget.style.transform = "scale(1.2)")
-                            }
-                            onMouseLeave={(e) =>
-                              (e.currentTarget.style.transform = "scale(1)")
-                            }
-                          ></i>
-                        </Link>
-                      </li> : <></>}
-                      {actionAuthorization("/parametre-personnel/etat/supprimer-etat-personnel",user?.permissions!)?
-
-                      <li>
-                        <Link
-                          to="#"
-                          className="badge bg-danger-subtle text-danger remove-item-btn"
-                        >
-                          <i
-                            className="ph ph-trash"
-                            style={{
-                              transition: "transform 0.3s ease-in-out",
-                              cursor: "pointer",
-                              fontSize: "1.5em",
-                            }}
-                            onMouseEnter={(e) =>
-                              (e.currentTarget.style.transform = "scale(1.2)")
-                            }
-                            onMouseLeave={(e) =>
-                              (e.currentTarget.style.transform = "scale(1)")
-                            }
-                            onClick={() => AlertDelete(etatPersonnel?._id!)}
-                            
-                          ></i>
-                        </Link>
-                      </li> :<></>}
-                    </ul>
-                  );
-            },
+      {
+        Header: "Action",
+        disableFilters: true,
+        filterable: true,
+        accessor: (etatPersonnel: EtatPersonnel) => {
+          return (
+            <ul className="hstack gap-2 list-unstyled mb-0">
+              <li>
+                <Link
+                  to=""
+                  state={etatPersonnel}
+                  className="badge bg-primary-subtle text-primary edit-item-btn"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleEditModal(etatPersonnel);
+                  }}
+                >
+                  <i
+                    className="ph ph-pencil-line"
+                    style={{
+                      transition: "transform 0.3s ease-in-out",
+                      cursor: "pointer",
+                      fontSize: "1.5em",
+                    }}
+                    onMouseEnter={(e) =>
+                      (e.currentTarget.style.transform = "scale(1.2)")
+                    }
+                    onMouseLeave={(e) =>
+                      (e.currentTarget.style.transform = "scale(1)")
+                    }
+                  ></i>
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="#"
+                  className="badge bg-danger-subtle text-danger remove-item-btn"
+                >
+                  <i
+                    className="ph ph-trash"
+                    style={{
+                      transition: "transform 0.3s ease-in-out",
+                      cursor: "pointer",
+                      fontSize: "1.5em",
+                    }}
+                    onMouseEnter={(e) =>
+                      (e.currentTarget.style.transform = "scale(1.2)")
+                    }
+                    onMouseLeave={(e) =>
+                      (e.currentTarget.style.transform = "scale(1)")
+                    }
+                    onClick={() => AlertDelete(etatPersonnel?._id!)}
+                  ></i>
+                </Link>
+              </li>
+            </ul>
+          );
         },
+      },
     ],
     []
-);
+  );
+
+  const [createEtatPersonnel] = useAddEtatPersonnelMutation();
+  const { state: etatComptePersonnel } = useLocation();
+  const [editEtatComptePersonnel] = useUpdateEtatPersonnelMutation();
+  const [isAddModalOpen, setAddModalOpen] = useState(false);
+  const [isEditModalOpen, setEditModalOpen] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [formData, setFormData] = useState({
+    _id: "",
+    //value_etat_enseignant: "",
+    etat_ar: "",
+    etat_fr: "",
+  });
+  const handleAddClick = () => {
+    setFormData({
+      _id: "",
+      etat_ar: "",
+      etat_fr: "",
+    });
+    setAddModalOpen(true);
+  };
+  const handleEditModal = (etatComptePersonnel: any) => {
+    setFormData({
+      _id: etatComptePersonnel._id,
+      etat_ar: etatComptePersonnel.etat_ar,
+      etat_fr: etatComptePersonnel.etat_fr,
+    });
+    setShowEditModal(true);
+  };
+  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData((prevState) => ({
+      ...prevState,
+      [e.target.id]: e.target.value,
+    }));
+  };
+  const errorAlert = (message: string) => {
+    Swal.fire({
+      position: "center",
+      icon: "error",
+      title: message,
+      showConfirmButton: false,
+      timer: 2000,
+    });
+  };
+
+  const onSubmitEtatPersonnel = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    try {
+      await createEtatPersonnel(formData).unwrap();
+      notify();
+      setAddModalOpen(false);
+      navigate("/parametre/etat-personnels");
+    } catch (error: any) {
+      console.log(error);
+    }
+  };
+
+  const onSubmitEditEtatComptePersonnel = async (
+    e: React.FormEvent<HTMLFormElement>
+  ) => {
+    e.preventDefault();
+    try {
+      await editEtatComptePersonnel(formData).unwrap();
+      setShowEditModal(false);
+      notify();
+    } catch (error) {
+      errorAlert("An error occurred while editing the etat compte Personnel.");
+    }
+  };
+
+  useEffect(() => {
+    if (etatComptePersonnel && isEditModalOpen) {
+      setFormData({
+        _id: etatComptePersonnel._id,
+        etat_ar: etatComptePersonnel.etat_ar,
+        etat_fr: etatComptePersonnel.etat_fr,
+      });
+    }
+  }, [etatComptePersonnel, isEditModalOpen]);
+
+  const notify = () => {
+    Swal.fire({
+      position: "center",
+      icon: "success",
+      title: "Etat compte a été crée avec succés",
+      showConfirmButton: false,
+      timer: 2000,
+    });
+  };
+
+  const [modal_AddOrderModals, setmodal_AddOrderModals] =
+    useState<boolean>(false);
+  function tog_AddOrderModals() {
+    setmodal_AddOrderModals(!modal_AddOrderModals);
+  }
   return (
     <React.Fragment>
       <div className="page-content">
         <Container fluid={true}>
-          <Breadcrumb title="Paramètres des personnels" pageTitle="Liste états des personnels" />
-         
+          <Breadcrumb
+            title="Paramètres des personnels"
+            pageTitle="Liste états des personnels"
+          />
+
           <Row id="sellersList">
             <Col lg={12}>
               <Card>
@@ -186,117 +283,26 @@ const ListEtatPersonnels = () => {
                           type="text"
                           className="form-control search"
                           placeholder="Chercher..."
+                          value={searchQuery}
+                          onChange={handleSearchChange}
                         />
                         <i className="ri-search-line search-icon"></i>
                       </div>
                     </Col>
-                    <Col className="col-lg-auto">
-                      <select
-                        className="form-select"
-                        id="idStatus"
-                        name="choices-single-default"
-                      >
-                        <option defaultValue="All">Status</option>
-                        <option value="All">tous</option>
-                        <option value="Active">Activé</option>
-                        <option value="Inactive">Desactivé</option>
-                      </select>
-                    </Col>
-                 
                     <Col className="col-lg-auto ms-auto">
                       <div className="hstack gap-2">
                         <Button
                           variant="primary"
                           className="add-btn"
-                          onClick={() => tog_AddEtatPersonnelModals()}
+                          onClick={() => handleAddClick()}
                         >
                           Ajouter Etat Personnel
                         </Button>
-                     
                       </div>
                     </Col>
                   </Row>
                 </Card.Body>
               </Card>
-
-              {/* <Modal
-                className="fade modal-fullscreen"
-                show={modal_AddParametreModals}
-                onHide={() => {
-                  tog_AddParametreModals();
-                }}
-                centered
-              >
-                <Modal.Header className="px-4 pt-4" closeButton>
-                  <h5 className="modal-title" id="exampleModalLabel">
-                    Ajouter Etat Personnel
-                  </h5>
-                </Modal.Header>
-                <Form className="tablelist-form">
-                  <Modal.Body className="p-4">
-                    <div
-                      id="alert-error-msg"
-                      className="d-none alert alert-danger py-2"
-                    ></div>
-                    <input type="hidden" id="id-field" />
-
-                    <div className="mb-3">
-                      <Form.Label htmlFor="seller-name-field">
-                        Valeur
-                      </Form.Label>
-                      <Form.Control
-                        type="text"
-                        id="seller-name-field"
-                        placeholder=""
-                        required
-                      />
-                    </div>
-                    <div className="mb-3">
-                      <Form.Label htmlFor="item-stock-field">
-                        Etat Personnel
-                      </Form.Label>
-                      <Form.Control
-                        type="text"
-                        id="item-stock-field"
-                        placeholder=""
-                        required
-                      />
-                    </div>
-
-                    <div
-                      className="mb-3"
-                      style={{
-                        direction: "rtl",
-                        textAlign: "right",
-                      }}
-                    >
-                      <Form.Label htmlFor="phone-field">حالة الإداري</Form.Label>
-                      <Form.Control
-                        type="text"
-                        id="phone-field"
-                        placeholder=""
-                        required
-                      />
-                    </div>
-                  </Modal.Body>
-                  <div className="modal-footer">
-                    <div className="hstack gap-2 justify-content-end">
-                      <Button
-                        className="btn-ghost-danger"
-                        onClick={() => {
-                          tog_AddParametreModals();
-                        }}
-                      >
-                        Fermer
-                      </Button>
-                      <Button variant="success" id="add-btn">
-                        Ajouter
-                      </Button>
-                    </div>
-                  </div>
-                </Form>
-              </Modal> */}
-
               <Card>
                 <Card.Body className="p-0">
                   {/* <div className="table-responsive table-card mb-1"> */}
@@ -305,17 +311,17 @@ const ListEtatPersonnels = () => {
                     id="customerTable"
                   >
                     <TableContainer
-                columns={(columns || [])}
-                data={(data || [])}
-                // isGlobalFilter={false}
-                iscustomPageSize={false}
-                isBordered={false}
-                customPageSize={10}
-                className="custom-header-css table align-middle table-nowrap"
-                tableClass="table-centered align-middle table-nowrap mb-0"
-                theadClass="text-muted table-light"
-                SearchPlaceholder='Search Products...'
-            />
+                      columns={columns || []}
+                      data={filteredEtatComptesPersonnels || []}
+                      // isGlobalFilter={false}
+                      iscustomPageSize={false}
+                      isBordered={false}
+                      customPageSize={10}
+                      className="custom-header-css table align-middle table-nowrap"
+                      tableClass="table-centered align-middle table-nowrap mb-0"
+                      theadClass="text-muted table-light"
+                      SearchPlaceholder="Search Products..."
+                    />
                   </table>
                   <div className="noresult" style={{ display: "none" }}>
                     <div className="text-center py-4">
@@ -335,6 +341,146 @@ const ListEtatPersonnels = () => {
                 </Card.Body>
               </Card>
             </Col>
+            {/* Add etat Personnel */}
+            <Modal
+              show={isAddModalOpen}
+              onHide={() => setAddModalOpen(false)}
+              centered
+            >
+              <Modal.Header className="px-4 pt-4" closeButton>
+                <h5 className="modal-title" id="exampleModalLabel">
+                  Ajouter Etat Compte Personnel
+                </h5>
+              </Modal.Header>
+              <Form className="tablelist-form" onSubmit={onSubmitEtatPersonnel}>
+                <Modal.Body className="p-4">
+                  <Row>
+                    <Col lg={6}>
+                      <div className="mb-3">
+                        <Form.Label htmlFor="etat_fr">
+                          Etat Compte Personnel
+                        </Form.Label>
+                        <Form.Control
+                          type="text"
+                          id="etat_fr"
+                          placeholder=""
+                          required
+                          onChange={onChange}
+                          value={formData.etat_fr}
+                        />
+                      </div>
+                    </Col>
+
+                    <Col lg={6}>
+                      <div
+                        className="mb-3"
+                        style={{
+                          direction: "rtl",
+                          textAlign: "right",
+                        }}
+                      >
+                        <Form.Label htmlFor="etat_ar">
+                          حالة حساب الإداري
+                        </Form.Label>
+                        <Form.Control
+                          type="text"
+                          id="etat_ar"
+                          placeholder=""
+                          required
+                          onChange={onChange}
+                          value={formData.etat_ar}
+                        />
+                      </div>
+                    </Col>
+                  </Row>
+                </Modal.Body>
+                <div className="modal-footer">
+                  <div className="hstack gap-2 justify-content-end">
+                    <Button className="btn-ghost-danger">Fermer</Button>
+                    <Button
+                      variant="success"
+                      id="add-btn"
+                      type="submit"
+                      onClick={tog_AddOrderModals}
+                    >
+                      Ajouter
+                    </Button>
+                  </div>
+                </div>
+              </Form>
+            </Modal>
+
+            {/*Edit etat enseignant */}
+            <Modal
+              show={showEditModal}
+              onHide={() => setShowEditModal(false)}
+              centered
+            >
+              <Modal.Header className="px-4 pt-4" closeButton>
+                <h5 className="modal-title" id="exampleModalLabel">
+                  Modifier Etat Compte Personnel
+                </h5>
+              </Modal.Header>
+              <Form
+                className="tablelist-form"
+                onSubmit={onSubmitEditEtatComptePersonnel}
+              >
+                <Modal.Body className="p-4">
+                  <Row>
+                    <Col lg={6}>
+                      <div className="mb-3">
+                        <Form.Label htmlFor="etat_fr">
+                          Etat Compte Personnel
+                        </Form.Label>
+                        <Form.Control
+                          type="text"
+                          id="etat_fr"
+                          placeholder=""
+                          required
+                          onChange={onChange}
+                          value={formData.etat_fr}
+                        />
+                      </div>
+                    </Col>
+
+                    <Col lg={6}>
+                      <div
+                        className="mb-3"
+                        style={{
+                          direction: "rtl",
+                          textAlign: "right",
+                        }}
+                      >
+                        <Form.Label htmlFor="etat_ar">
+                          حالة حساب الإداري
+                        </Form.Label>
+                        <Form.Control
+                          type="text"
+                          id="etat_ar"
+                          placeholder=""
+                          required
+                          onChange={onChange}
+                          value={formData.etat_ar}
+                        />
+                      </div>
+                    </Col>
+                  </Row>
+                </Modal.Body>
+                <div className="modal-footer">
+                  <div className="hstack gap-2 justify-content-end">
+                    <Button
+                      className="btn-ghost-danger"
+                      onClick={() => setShowEditModal(false)}
+                    >
+                      Fermer
+                    </Button>
+                    <Button variant="success" id="add-btn" type="submit">
+                      Enregistrer
+                    </Button>
+                  </div>
+                </div>
+              </Form>
+            </Modal>
           </Row>
         </Container>
       </div>
@@ -343,8 +489,3 @@ const ListEtatPersonnels = () => {
 };
 
 export default ListEtatPersonnels;
-
-
-
-
-    

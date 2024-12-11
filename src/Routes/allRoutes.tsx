@@ -199,6 +199,7 @@ import ListeDossierAdministratif from "pages/Gestion-enseignant/Dossieradministr
 import AddDossieradministratif from "pages/Gestion-enseignant/Dossieradministratif/AddDossieradministratif";
 import AddPapierAdministratif from "pages/Papier-Administratif/AddPapierAdministratif";
 import ListePapierAdministratifs from "pages/Papier-Administratif/ListePapierAdministratif";
+
 import EditDossierAdministratifEnseignants from "pages/Gestion-enseignant/Dossieradministratif/EditDossierAdministratif";
 import CreateAdmin from "pages/Permissions/AjouterAdmin";
 import GenerateDemande from "pages/Demande-etudiant/GenerateDemande";
@@ -211,7 +212,22 @@ import DemandeCongeDetails from "pages/Gestion-demande-conge/DemandeCongeDetails
 import EditDemandeConge from "pages/Gestion-demande-conge/EditDemandeConge";
 import AjouterSoldeConge from "pages/Gestion-solde-conge/AjouterSoldeConge";
 import EditAnnuelLeaveType from "pages/Gestion-solde-conge/ParamCongeAnnuel";
-
+import EditProfilEtudiant from "pages/Gestion-etudiant/EditProfilEtudiant";
+import ListTypeSeances from "pages/Departements/TypeSeances/ListTypeSeances";
+import AddTypeSeance from "pages/Departements/TypeSeances/AddTypeSeance";
+import ListClassPeriods from "pages/Departements/Emploi/ClassPeriods";
+import TableauChargesHoraires from "pages/Departements/EmploiEnseignant/TableauChargesHoraires";
+import GestionSeances from "pages/Departements/Emploi/GestionSeances";
+import AjouterRattrapage from "pages/Rattrapages/AjouterRattrapage";
+import ListeRattrapages from "pages/Rattrapages/ListeRattrapages";
+import ListeEmploiEnseignants from "pages/Departements/EmploiEnseignant/ListeEmploiEnseignants";
+import TeacherPeriod from "pages/Departements/EmploiEnseignant/TeacherPeriod";
+import SingleEmploiEnseignant from "pages/Departements/EmploiEnseignant/GestionEmploiEnseignant";
+import AddFicheVoeux from "pages/Departements/FicheVoeux/AddFicheVoeux";
+import ListFicheVoeux from "pages/Departements/FicheVoeux/ListeFicheVoeux";
+import EditFicheVoeux from "pages/Departements/FicheVoeux/EditFicheVoeux";
+import SingleEmploiClasse from "pages/Departements/Emploi/GestionEmploiClasse";
+import ListeEmploisClasse from "pages/Departements/Emploi/ListeEmploisClasse";
 const authProtectedRoutes = [
     { path: "/dashboard", component: <Dashboard /> },
 
@@ -245,7 +261,7 @@ const authProtectedRoutes = [
    { path: "/gestion-etudiant/compte-etudiant", component: <MyAccount /> },
    { path: "/gestion-etudiant/liste-etudiants", component: <ListEtudiants /> },
    { path: "/gestion-etudiant/ajouter-etudiant", component: <AjouterEtudiant/> },
-
+  { path: "/gestion-etudiant/edit-compte-etudiant", component: <EditProfilEtudiant/> },
    //gestion enseignant
    { path: "/gestion-enseignant/ajouter-enseignant", component: <AjouterEnseignant /> },
    { path: "/gestion-enseignant/liste-enseignants", component: <ListEnseignants /> },
@@ -368,6 +384,11 @@ const authProtectedRoutes = [
 { path: "/departement/gestion-classes/ajouter-section", component: <AddSection /> },
 { path: "/departement/gestion-classes/edit-section", component: <EditSection /> },
 
+// Gestion Type seance 
+
+{ path: "/departement/gestion-types-seances/liste-types-seances",component: <ListTypeSeances />, },
+{ path: "/parametre/add-type-seance",component: <AddTypeSeance />,},
+
 //Gestion des departements
 { path: "/departement/gestion-departements/liste-departements",component: <ListDepartement />,},
 { path: "/departement/gestion-departements/departements/add-departement", component: <AddDepartement />},
@@ -417,6 +438,33 @@ const authProtectedRoutes = [
 // gestion des soldes congés
 { path: "/solde-conge/Ajouter-solde-conge", component: <AjouterSoldeConge />,},
 { path: "/solde-conge/liste-solde-conge", component: <ListeSoldeConge />,},
+
+ // Gestion  Des fiches des voeux
+{ path: "/gestion-emplois/gestion-fiche-voeux/add-fiche-voeux",component: <AddFicheVoeux />, },
+{path: "/gestion-emplois/gestion-fiche-voeux/liste-fiche-voeux",component: <ListFicheVoeux />, },
+{path: "/gestion-emplois/gestion-fiche-voeux/edit-fiche-voeux",component: <EditFicheVoeux />,},
+
+  // liste des rattrapages
+  { path: "/ajouter-rattrapage",component: <AjouterRattrapage />,},
+ 
+
+  //gestion emploi classes periods
+  { path: "/gestion-emplois/emploi-classe/liste-emplois",component: <ListeEmploisClasse />, }, // liste classe 
+  { path: "/gestion-emplois/emploi-classe/single-emplois", component: <SingleEmploiClasse />, }, //view 
+  { path: "/gestion-emplois/emploi-classe/liste-seance", component: <GestionSeances /> }, //view tableau des seance 
+  { path: "/gestion-emplois/emploi-classe/periodes-classes", component: <ListClassPeriods /> },// creeer periode d emploi
+ 
+  //gestion emploi enseignant
+ { path: "/gestion-emplois/emlpoi-enseignant/single-emplois", component: <SingleEmploiEnseignant /> },
+ {path: "/gestion-emplois/emlpoi-enseignant/liste-emplois",component: <ListeEmploiEnseignants />,},
+ {path: "/gestion-emplois/emlpoi-enseignant/tableau-charges-horaires",component: <TableauChargesHoraires />,},
+
+
+
+ //liset rattrapages
+
+ { path: "/liste-rattrapages", component: <ListeRattrapages /> },
+
 
 
 

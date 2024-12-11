@@ -255,16 +255,18 @@ const TableContainer = ({
               prepareRow(row);
               return (
                 <Fragment key={row.getRowProps().key}>
-                  <tr>
-                    {row.cells.map((cell: any) => {
-                      return (
-                        <td key={cell.id} {...cell.getCellProps()}>
-                          {cell.render("Cell")}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                </Fragment>
+                <tr>
+                  {row.cells.map((cell: any) => {
+                    const { key, ...cellProps } = cell.getCellProps(); // Destructure key separately
+                    return (
+                      <td key={key} {...cellProps}>  {/* Pass key directly to the element */}
+                        {cell.render("Cell")}
+                      </td>
+                    );
+                  })}
+                </tr>
+              </Fragment>
+              
               );
             })}
           </tbody>

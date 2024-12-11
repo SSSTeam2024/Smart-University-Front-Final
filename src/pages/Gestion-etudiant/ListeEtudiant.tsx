@@ -200,7 +200,7 @@ const ListEtudiants = () => {
               {actionAuthorization("/gestion-etudiant/edit-compte-etudiant",user?.permissions!)?
               <li>
                 <Link
-                  to="/modifierProfilEtudiant"
+                  to="/gestion-etudiant/edit-compte-etudiant"
                   className="badge bg-primary-subtle text-primary edit-item-btn"
                   state={students}
                 >

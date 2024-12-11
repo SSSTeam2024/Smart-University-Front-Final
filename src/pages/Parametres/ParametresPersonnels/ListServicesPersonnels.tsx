@@ -1,42 +1,53 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Button,
   Card,
   Col,
   Container,
-  Dropdown,
   Form,
   Modal,
   Row,
 } from "react-bootstrap";
 import Breadcrumb from "Common/BreadCrumb";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import TableContainer from "Common/TableContainer";
 import Swal from "sweetalert2";
-import { CategoriePersonnel, useDeleteCategoriePersonnelMutation, useFetchCategoriesPersonnelQuery } from "features/categoriePersonnel/categoriePersonnel";
-import { ServicePersonnel, useDeleteServicePersonnelMutation, useFetchServicesPersonnelQuery } from "features/servicePersonnel/servicePersonnel";
-import { actionAuthorization } from 'utils/pathVerification';
-import { RootState } from 'app/store';
-import { useSelector } from 'react-redux';
-import { selectCurrentUser } from 'features/account/authSlice'; 
+import {
+  ServicePersonnel,
+  useAddServicePersonnelMutation,
+  useDeleteServicePersonnelMutation,
+  useFetchServicesPersonnelQuery,
+  useUpdateServicePersonnelMutation,
+} from "features/servicePersonnel/servicePersonnel";
 
 const ListServicesPersonnels = () => {
   document.title = "Liste services des personnels | Smart University";
-  const user = useSelector((state: RootState) => selectCurrentUser(state));
 
   const navigate = useNavigate();
 
-  const [modal_AddParametreModals, setmodal_AddParametreModals] =
-    useState<boolean>(false);
-  function tog_AddParametreModals() {
-    setmodal_AddParametreModals(!modal_AddParametreModals);
-  }
-
+  const [searchQuery, setSearchQuery] = useState("");
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(event.target.value.toLowerCase());
+  };
 
   function tog_AddServicePersonnel() {
-    navigate("/parametre-personnel/service/ajouter-service-personnel");
+    navigate("/parametre/add-service-personnels");
   }
   const { data = [] } = useFetchServicesPersonnelQuery();
+  const filteredServicePersonnels = useMemo(() => {
+    let result = data;
+    if (searchQuery) {
+      result = result.filter((servicePersonnel) =>
+        [
+          servicePersonnel.service_fr,
+          servicePersonnel.service_ar,
+          //servicePersonnel.value,
+        ].some((value) => value && value.toLowerCase().includes(searchQuery))
+      );
+    }
+
+    return result;
+  }, [data, searchQuery]);
   const [deleteServicePersonnel] = useDeleteServicePersonnelMutation();
 
   const swalWithBootstrapButtons = Swal.mixin({
@@ -47,71 +58,135 @@ const ListServicesPersonnels = () => {
     buttonsStyling: false,
   });
   const AlertDelete = async (_id: string) => {
-  
     swalWithBootstrapButtons
-    .fire({
-      title: "Êtes-vous sûr?",
-      text: "Vous ne pourrez pas revenir en arrière!",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Oui, supprimez-le!",
-      cancelButtonText: "Non, annuler!",
-      reverseButtons: true,
-    })
-    .then((result) => {
-      if (result.isConfirmed) {
-        deleteServicePersonnel(_id);
-        swalWithBootstrapButtons.fire(
-          "Supprimé!",
-          "Service personnel a été supprimé.",
-          "success"
-        );
-      } else if (result.dismiss === Swal.DismissReason.cancel) {
-        swalWithBootstrapButtons.fire(
-          "Annulé",
-          "Service personnel est en sécurité :)",
-          "error"
-        );
-      }
-    });
+      .fire({
+        title: "Êtes-vous sûr?",
+        text: "Vous ne pourrez pas revenir en arrière!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Oui, supprimez-le!",
+        cancelButtonText: "Non, annuler!",
+        reverseButtons: true,
+      })
+      .then((result) => {
+        if (result.isConfirmed) {
+          deleteServicePersonnel(_id);
+          swalWithBootstrapButtons.fire(
+            "Supprimé!",
+            "Service personnel a été supprimé.",
+            "success"
+          );
+        } else if (result.dismiss === Swal.DismissReason.cancel) {
+          swalWithBootstrapButtons.fire(
+            "Annulé",
+            "Service personnel est en sécurité :)",
+            "error"
+          );
+        }
+      });
+  };
+
+  const [modal_AddOrderModals, setmodal_AddOrderModals] =
+    useState<boolean>(false);
+  function tog_AddOrderModals() {
+    setmodal_AddOrderModals(!modal_AddOrderModals);
   }
+
+  const [createServicePersonnel] = useAddServicePersonnelMutation();
+  const { state: servicePersonnel } = useLocation();
+  const [editServicePersonnel] = useUpdateServicePersonnelMutation();
+  const [isAddModalOpen, setAddModalOpen] = useState(false);
+  const [isEditModalOpen, setEditModalOpen] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [formData, setFormData] = useState({
+    _id: "",
+    // value_poste_enseignant: "",
+    service_ar: "",
+    service_fr: "",
+  });
+
+  const handleAddClick = () => {
+    setFormData({
+      _id: "",
+      service_ar: "",
+      service_fr: "",
+    });
+    setAddModalOpen(true);
+  };
+
+  const handleEditModal = (serviceEnseignant: any) => {
+    setFormData({
+      _id: serviceEnseignant._id,
+      service_ar: serviceEnseignant.service_ar,
+      service_fr: serviceEnseignant.service_fr,
+    });
+    setShowEditModal(true);
+  };
+  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData((prevState) => ({
+      ...prevState,
+      [e.target.id]: e.target.value,
+    }));
+  };
+  const errorAlert = (message: string) => {
+    Swal.fire({
+      position: "center",
+      icon: "error",
+      title: message,
+      showConfirmButton: false,
+      timer: 2000,
+    });
+  };
+
+  const onSubmitPostePersonnel = async (
+    e: React.FormEvent<HTMLFormElement>
+  ) => {
+    e.preventDefault();
+    try {
+      await createServicePersonnel(formData).unwrap();
+      notify();
+      setAddModalOpen(false);
+      navigate("/parametre/create-personnels");
+    } catch (error: any) {
+      console.log(error);
+    }
+  };
+
+  const onSubmitEditServicePersonnel = async (
+    e: React.FormEvent<HTMLFormElement>
+  ) => {
+    e.preventDefault();
+    try {
+      await editServicePersonnel(formData).unwrap();
+      setShowEditModal(false);
+      notify();
+    } catch (error) {
+      errorAlert("An error occurred while editing the poste personnel.");
+    }
+  };
+
+  useEffect(() => {
+    if (servicePersonnel && isEditModalOpen) {
+      setFormData({
+        _id: servicePersonnel._id,
+        service_ar: servicePersonnel.service_ar,
+        service_fr: servicePersonnel.service_fr,
+      });
+    }
+  }, [servicePersonnel, isEditModalOpen]);
+
+  const notify = () => {
+    Swal.fire({
+      position: "center",
+      icon: "success",
+      title: "Service personnel a été crée avec succés",
+      showConfirmButton: false,
+      timer: 2000,
+    });
+  };
 
   const columns = useMemo(
     () => [
-      {
-        Header: (
-          <div className="form-check">
-            {" "}
-            <input
-              className="form-check-input"
-              type="checkbox"
-              id="checkAll"
-              value="option"
-            />{" "}
-          </div>
-        ),
-        Cell: (cellProps: any) => {
-          return (
-            <div className="form-check">
-              {" "}
-              <input
-                className="form-check-input"
-                type="checkbox"
-                name="chk_child"
-                defaultValue="option1"
-              />{" "}
-            </div>
-          );
-        },
-        id: "#",
-      },
-      {
-        Header: "Valeur",
-        accessor: "value",
-        disableFilters: true,
-        filterable: true,
-      },
-
       {
         Header: "Service Personnel",
         accessor: "service_fr",
@@ -132,13 +207,15 @@ const ListServicesPersonnels = () => {
         accessor: (servicePersonnel: ServicePersonnel) => {
           return (
             <ul className="hstack gap-2 list-unstyled mb-0">
-            {actionAuthorization("/parametre-personnel/service/edit-service-personnel",user?.permissions!)?
-
               <li>
                 <Link
-                   to="/parametre-personnel/service/edit-service-personnel"
-                   state={servicePersonnel}
+                  to=""
+                  state={servicePersonnel}
                   className="badge bg-primary-subtle text-primary edit-item-btn"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleEditModal(servicePersonnel);
+                  }}
                 >
                   <i
                     className="ph ph-pencil-line"
@@ -153,12 +230,9 @@ const ListServicesPersonnels = () => {
                     onMouseLeave={(e) =>
                       (e.currentTarget.style.transform = "scale(1)")
                     }
-                  
                   ></i>
                 </Link>
-              </li> :<></>}
-              {actionAuthorization("/parametre-personnel/service/supprimer-service-personnel",user?.permissions!)?
-
+              </li>
               <li>
                 <Link
                   to="#"
@@ -180,7 +254,7 @@ const ListServicesPersonnels = () => {
                     onClick={() => AlertDelete(servicePersonnel?._id!)}
                   ></i>
                 </Link>
-              </li> :<></>}
+              </li>
             </ul>
           );
         },
@@ -209,109 +283,26 @@ const ListServicesPersonnels = () => {
                           type="text"
                           className="form-control search"
                           placeholder="Chercher..."
+                          value={searchQuery}
+                          onChange={handleSearchChange}
                         />
                         <i className="ri-search-line search-icon"></i>
                       </div>
                     </Col>
-                    <Col className="col-lg-auto">
-                      <select
-                        className="form-select"
-                        id="idStatus"
-                        name="choices-single-default"
-                      >
-                        <option defaultValue="All">Status</option>
-                        <option value="All">tous</option>
-                        <option value="Active">Activé</option>
-                        <option value="Inactive">Desactivé</option>
-                      </select>
-                    </Col>
-
                     <Col className="col-lg-auto ms-auto">
                       <div className="hstack gap-2">
-                      {actionAuthorization("/parametre-personnel/service/ajouter-service-personnel",user?.permissions!)?
-
                         <Button
                           variant="primary"
                           className="add-btn"
-                          onClick={() => tog_AddServicePersonnel()}
+                          onClick={() => handleAddClick()}
                         >
                           Ajouter service personnel
-                        </Button> :<></>}
+                        </Button>
                       </div>
                     </Col>
                   </Row>
                 </Card.Body>
               </Card>
-{/* 
-              <Modal
-                className="fade modal-fullscreen"
-                show={modal_AddParametreModals}
-                onHide={() => {
-                  tog_AddParametreModals();
-                }}
-                centered
-              >
-                <Modal.Header className="px-4 pt-4" closeButton>
-                  <h5 className="modal-title" id="exampleModalLabel">
-                    Ajouter catégorie personnel
-                  </h5>
-                </Modal.Header>
-                <Form className="tablelist-form">
-                  <Modal.Body className="p-4">
-                    <div
-                      id="alert-error-msg"
-                      className="d-none alert alert-danger py-2"
-                    ></div>
-                    <input type="hidden" id="id-field" />
-
-                    <div className="mb-3">
-                      <Form.Label htmlFor="item-stock-field">
-                        Catégorie(profession)
-                      </Form.Label>
-                      <Form.Control
-                        type="text"
-                        id="item-stock-field"
-                        placeholder=""
-                        required
-                      />
-                    </div>
-
-                    <div
-                      className="mb-3"
-                      style={{
-                        direction: "rtl",
-                        textAlign: "right",
-                      }}
-                    >
-                      <Form.Label htmlFor="phone-field">
-                        الخطة الوظيفية
-                      </Form.Label>
-                      <Form.Control
-                        type="text"
-                        id="phone-field"
-                        placeholder=""
-                        required
-                      />
-                    </div>
-                  </Modal.Body>
-                  <div className="modal-footer">
-                    <div className="hstack gap-2 justify-content-end">
-                      <Button
-                        className="btn-ghost-danger"
-                        onClick={() => {
-                          tog_AddParametreModals();
-                        }}
-                      >
-                        Fermer
-                      </Button>
-                      <Button variant="success" id="add-btn">
-                        Ajouter
-                      </Button>
-                    </div>
-                  </div>
-                </Form>
-              </Modal> */}
-
               <Card>
                 <Card.Body className="p-0">
                   {/* <div className="table-responsive table-card mb-1"> */}
@@ -321,7 +312,7 @@ const ListServicesPersonnels = () => {
                   >
                     <TableContainer
                       columns={columns || []}
-                      data={data || []}
+                      data={filteredServicePersonnels || []}
                       // isGlobalFilter={false}
                       iscustomPageSize={false}
                       isBordered={false}
@@ -350,6 +341,150 @@ const ListServicesPersonnels = () => {
                 </Card.Body>
               </Card>
             </Col>
+
+            {/* Add service personnel */}
+            <Modal
+              show={isAddModalOpen}
+              onHide={() => setAddModalOpen(false)}
+              centered
+            >
+              <Modal.Header className="px-4 pt-4" closeButton>
+                <h5 className="modal-title" id="exampleModalLabel">
+                  Ajouter Service Personnel
+                </h5>
+              </Modal.Header>
+              <Form
+                className="tablelist-form"
+                onSubmit={onSubmitPostePersonnel}
+              >
+                <Modal.Body className="p-4">
+                  <Row>
+                    <Col lg={6}>
+                      <div className="mb-3">
+                        <Form.Label htmlFor="service_fr">
+                          Poste Personnel
+                        </Form.Label>
+                        <Form.Control
+                          type="text"
+                          id="service_fr"
+                          placeholder=""
+                          required
+                          onChange={onChange}
+                          value={formData.service_fr}
+                        />
+                      </div>
+                    </Col>
+
+                    <Col lg={6}>
+                      <div
+                        className="mb-3"
+                        style={{
+                          direction: "rtl",
+                          textAlign: "right",
+                        }}
+                      >
+                        <Form.Label htmlFor="service_ar">
+                          إدارة شؤون الموظفين
+                        </Form.Label>
+                        <Form.Control
+                          type="text"
+                          id="service_ar"
+                          placeholder=""
+                          required
+                          onChange={onChange}
+                          value={formData.service_ar}
+                        />
+                      </div>
+                    </Col>
+                  </Row>
+                </Modal.Body>
+                <div className="modal-footer">
+                  <div className="hstack gap-2 justify-content-end">
+                    <Button className="btn-ghost-danger">Fermer</Button>
+                    <Button
+                      variant="success"
+                      id="add-btn"
+                      type="submit"
+                      onClick={tog_AddOrderModals}
+                    >
+                      Ajouter
+                    </Button>
+                  </div>
+                </div>
+              </Form>
+            </Modal>
+
+            {/*Edit poste personn */}
+            <Modal
+              show={showEditModal}
+              onHide={() => setShowEditModal(false)}
+              centered
+            >
+              <Modal.Header className="px-4 pt-4" closeButton>
+                <h5 className="modal-title" id="exampleModalLabel">
+                  Modifier Poste Personnel
+                </h5>
+              </Modal.Header>
+              <Form
+                className="tablelist-form"
+                onSubmit={onSubmitEditServicePersonnel}
+              >
+                <Modal.Body className="p-4">
+                  <Row>
+                    <Col lg={6}>
+                      <div className="mb-3">
+                        <Form.Label htmlFor="service_fr">
+                          Service Personnel
+                        </Form.Label>
+                        <Form.Control
+                          type="text"
+                          id="service_fr"
+                          placeholder=""
+                          required
+                          onChange={onChange}
+                          value={formData.service_fr}
+                        />
+                      </div>
+                    </Col>
+
+                    <Col lg={6}>
+                      <div
+                        className="mb-3"
+                        style={{
+                          direction: "rtl",
+                          textAlign: "right",
+                        }}
+                      >
+                        <Form.Label htmlFor="service_ar">
+                          إدارة شؤون الموظفين
+                        </Form.Label>
+                        <Form.Control
+                          type="text"
+                          id="service_ar"
+                          placeholder=""
+                          required
+                          onChange={onChange}
+                          value={formData.service_ar}
+                        />
+                      </div>
+                    </Col>
+                  </Row>
+                </Modal.Body>
+                <div className="modal-footer">
+                  <div className="hstack gap-2 justify-content-end">
+                    <Button
+                      className="btn-ghost-danger"
+                      onClick={() => setShowEditModal(false)}
+                    >
+                      Fermer
+                    </Button>
+                    <Button variant="success" id="add-btn" type="submit">
+                      Enregistrer
+                    </Button>
+                  </div>
+                </div>
+              </Form>
+            </Modal>
           </Row>
         </Container>
       </div>

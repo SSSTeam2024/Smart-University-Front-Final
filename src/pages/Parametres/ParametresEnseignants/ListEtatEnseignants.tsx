@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Button,
   Card,
@@ -10,31 +10,44 @@ import {
   Row,
 } from "react-bootstrap";
 import Breadcrumb from "Common/BreadCrumb";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import TableContainer from "Common/TableContainer";
 import Swal from "sweetalert2";
-import { useDeleteEtatEnseignantMutation, useFetchEtatsEnseignantQuery } from "features/etatEnseignant/etatEnseignant";
-import { actionAuthorization } from 'utils/pathVerification';
-import { RootState } from 'app/store';
-import { useSelector } from 'react-redux';
-import { selectCurrentUser } from 'features/account/authSlice'; 
+import {
+  EtatEnseignant,
+  useAddEtatEnseignantMutation,
+  useDeleteEtatEnseignantMutation,
+  useFetchEtatsEnseignantQuery,
+  useUpdateEtatEnseignantMutation,
+} from "features/etatEnseignant/etatEnseignant";
 
 const ListEtatEnseignants = () => {
   document.title = "Liste états des enseignants | Smart University";
-  const user = useSelector((state: RootState) => selectCurrentUser(state));
 
   const navigate = useNavigate();
-
-  const [modal_AddParametreModals, setmodal_AddParametreModals] =
+  const [modal_AddOrderModals, setmodal_AddOrderModals] =
     useState<boolean>(false);
-  function tog_AddParametreModals() {
-    setmodal_AddParametreModals(!modal_AddParametreModals);
+  function tog_AddOrderModals() {
+    setmodal_AddOrderModals(!modal_AddOrderModals);
   }
-
-  function tog_AddEtatEnseignant() {
-    navigate("/parametre-enseignant/etat/ajouter-etat-enseignant");
-  }
+  const [searchQuery, setSearchQuery] = useState("");
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(event.target.value.toLowerCase());
+  };
   const { data = [] } = useFetchEtatsEnseignantQuery();
+
+  const filteredEtatCompteEnseignants = useMemo(() => {
+    let result = data;
+    if (searchQuery) {
+      result = result.filter((etatCompteEnseignant) =>
+        [etatCompteEnseignant.etat_ar, etatCompteEnseignant.etat_fr].some(
+          (value) => value && value.toLowerCase().includes(searchQuery)
+        )
+      );
+    }
+
+    return result;
+  }, [data, searchQuery]);
   const [deleteEtatEnseignant] = useDeleteEtatEnseignantMutation();
 
   const swalWithBootstrapButtons = Swal.mixin({
@@ -45,70 +58,127 @@ const ListEtatEnseignants = () => {
     buttonsStyling: false,
   });
   const AlertDelete = async (_id: string) => {
-  
     swalWithBootstrapButtons
-    .fire({
-      title: "Êtes-vous sûr?",
-      text: "Vous ne pourrez pas revenir en arrière!",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Oui, supprimez-le!",
-      cancelButtonText: "Non, annuler!",
-      reverseButtons: true,
-    })
-    .then((result) => {
-      if (result.isConfirmed) {
-        deleteEtatEnseignant(_id);
-        swalWithBootstrapButtons.fire(
-          "Supprimé!",
-          "L'état compte enseignant a été supprimé.",
-          "success"
-        );
-      } else if (result.dismiss === Swal.DismissReason.cancel) {
-        swalWithBootstrapButtons.fire(
-          "Annulé",
-          "L'état compte enseignant est en sécurité :)",
-          "error"
-        );
-      }
+      .fire({
+        title: "Êtes-vous sûr?",
+        text: "Vous ne pourrez pas revenir en arrière!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Oui, supprimez-le!",
+        cancelButtonText: "Non, annuler!",
+        reverseButtons: true,
+      })
+      .then((result) => {
+        if (result.isConfirmed) {
+          deleteEtatEnseignant(_id);
+          swalWithBootstrapButtons.fire(
+            "Supprimé!",
+            "L'état compte enseignant a été supprimé.",
+            "success"
+          );
+        } else if (result.dismiss === Swal.DismissReason.cancel) {
+          swalWithBootstrapButtons.fire(
+            "Annulé",
+            "L'état compte enseignant est en sécurité :)",
+            "error"
+          );
+        }
+      });
+  };
+
+  const [createEtatEnseignant] = useAddEtatEnseignantMutation();
+  const { state: etatCompteEnseignant } = useLocation();
+  const [editEtatCompteEnseignant] = useUpdateEtatEnseignantMutation();
+  const [isAddModalOpen, setAddModalOpen] = useState(false);
+  const [isEditModalOpen, setEditModalOpen] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [formData, setFormData] = useState({
+    _id: "",
+    //value_etat_enseignant: "",
+    etat_ar: "",
+    etat_fr: "",
+  });
+  const handleAddClick = () => {
+    setFormData({
+      _id: "",
+      etat_ar: "",
+      etat_fr: "",
     });
-  }
+    setAddModalOpen(true);
+  };
+  const handleEditModal = (etatCompteEnseignant: any) => {
+    setFormData({
+      _id: etatCompteEnseignant._id,
+      etat_ar: etatCompteEnseignant.etat_ar,
+      etat_fr: etatCompteEnseignant.etat_fr,
+    });
+    setShowEditModal(true);
+  };
+  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData((prevState) => ({
+      ...prevState,
+      [e.target.id]: e.target.value,
+    }));
+  };
+  const errorAlert = (message: string) => {
+    Swal.fire({
+      position: "center",
+      icon: "error",
+      title: message,
+      showConfirmButton: false,
+      timer: 2000,
+    });
+  };
+
+  const onSubmitEtatEnseignant = async (
+    e: React.FormEvent<HTMLFormElement>
+  ) => {
+    e.preventDefault();
+    try {
+      await createEtatEnseignant(formData).unwrap();
+      notify();
+      setAddModalOpen(false);
+      navigate("/parametre/etat-enseignants");
+    } catch (error: any) {
+      console.log(error);
+    }
+  };
+
+  const onSubmitEditEtatCompteEnseignant = async (
+    e: React.FormEvent<HTMLFormElement>
+  ) => {
+    e.preventDefault();
+    try {
+      await editEtatCompteEnseignant(formData).unwrap();
+      setShowEditModal(false);
+      notify();
+    } catch (error) {
+      errorAlert("An error occurred while editing the poste enseignant.");
+    }
+  };
+
+  useEffect(() => {
+    if (etatCompteEnseignant && isEditModalOpen) {
+      setFormData({
+        _id: etatCompteEnseignant._id,
+        etat_ar: etatCompteEnseignant.etat_ar,
+        etat_fr: etatCompteEnseignant.etat_fr,
+      });
+    }
+  }, [etatCompteEnseignant, isEditModalOpen]);
+
+  const notify = () => {
+    Swal.fire({
+      position: "center",
+      icon: "success",
+      title: "Etat compte a été crée avec succés",
+      showConfirmButton: false,
+      timer: 2000,
+    });
+  };
+
   const columns = useMemo(
     () => [
-      {
-        Header: (
-          <div className="form-check">
-            {" "}
-            <input
-              className="form-check-input"
-              type="checkbox"
-              id="checkAll"
-              value="option"
-            />{" "}
-          </div>
-        ),
-        Cell: (cellProps: any) => {
-          return (
-            <div className="form-check">
-              {" "}
-              <input
-                className="form-check-input"
-                type="checkbox"
-                name="chk_child"
-                defaultValue="option1"
-              />{" "}
-            </div>
-          );
-        },
-        id: "#",
-      },
-      {
-        Header: "Value",
-        accessor: "value_etat_enseignant",
-        disableFilters: true,
-        filterable: true,
-      },
-
       {
         Header: "Etat Compte Enseignant",
         accessor: "etat_fr",
@@ -126,17 +196,18 @@ const ListEtatEnseignants = () => {
         Header: "Action",
         disableFilters: true,
         filterable: true,
-        accessor: (etatEnseignant: any) => {
+        accessor: (etatCompteEnseignant: EtatEnseignant) => {
           return (
             <ul className="hstack gap-2 list-unstyled mb-0">
-    {actionAuthorization("/parametre-enseignant/etat/edit-etat-enseignant",user?.permissions!)?
-
               <li>
                 <Link
-             
-                  to="/parametre-enseignant/etat/edit-etat-enseignant"
-                  state={etatEnseignant}
+                  to=""
+                  state={etatCompteEnseignant}
                   className="badge bg-primary-subtle text-primary edit-item-btn"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleEditModal(etatCompteEnseignant);
+                  }}
                 >
                   <i
                     className="ph ph-pencil-line"
@@ -151,12 +222,9 @@ const ListEtatEnseignants = () => {
                     onMouseLeave={(e) =>
                       (e.currentTarget.style.transform = "scale(1)")
                     }
-                    
                   ></i>
                 </Link>
-              </li> :<></> }
-              {actionAuthorization("/parametre-enseignant/etat/edit-etat-enseignant",user?.permissions!)?
-
+              </li>
               <li>
                 <Link
                   to="#"
@@ -175,10 +243,10 @@ const ListEtatEnseignants = () => {
                     onMouseLeave={(e) =>
                       (e.currentTarget.style.transform = "scale(1)")
                     }
-                    onClick={() => AlertDelete(etatEnseignant?._id!)}
+                    onClick={() => AlertDelete(etatCompteEnseignant?._id!)}
                   ></i>
                 </Link>
-              </li> :<></>}
+              </li>
             </ul>
           );
         },
@@ -206,119 +274,27 @@ const ListEtatEnseignants = () => {
                           type="text"
                           className="form-control search"
                           placeholder="Chercher..."
+                          value={searchQuery}
+                          onChange={handleSearchChange}
                         />
                         <i className="ri-search-line search-icon"></i>
                       </div>
                     </Col>
-                    <Col className="col-lg-auto">
-                      <select
-                        className="form-select"
-                        id="idStatus"
-                        name="choices-single-default"
-                      >
-                        <option defaultValue="All">Status</option>
-                        <option value="All">tous</option>
-                        <option value="Active">Activé</option>
-                        <option value="Inactive">Desactivé</option>
-                      </select>
-                    </Col>
 
                     <Col className="col-lg-auto ms-auto">
                       <div className="hstack gap-2">
-                      {actionAuthorization("/parametre-enseignant/etat/ajouter-etat-enseignant",user?.permissions!)?
-
                         <Button
                           variant="primary"
                           className="add-btn"
-                          onClick={() => tog_AddEtatEnseignant()}
+                          onClick={handleAddClick}
                         >
-                          Ajouter Etat
-                        </Button> :<></>}
+                          Ajouter Etat Compte
+                        </Button>
                       </div>
                     </Col>
                   </Row>
                 </Card.Body>
               </Card>
-{/* 
-              <Modal
-                className="fade modal-fullscreen"
-                show={modal_AddParametreModals}
-                onHide={() => {
-                  tog_AddParametreModals();
-                }}
-                centered
-              >
-                <Modal.Header className="px-4 pt-4" closeButton>
-                  <h5 className="modal-title" id="exampleModalLabel">
-                    Ajouter Etat Enseignant
-                  </h5>
-                </Modal.Header>
-                <Form className="tablelist-form">
-                  <Modal.Body className="p-4">
-                    <div
-                      id="alert-error-msg"
-                      className="d-none alert alert-danger py-2"
-                    ></div>
-                    <input type="hidden" id="id-field" />
-
-                    <div className="mb-3">
-                      <Form.Label htmlFor="seller-name-field">
-                        Valeur
-                      </Form.Label>
-                      <Form.Control
-                        type="text"
-                        id="seller-name-field"
-                        placeholder=""
-                        required
-                      />
-                    </div>
-                    <div className="mb-3">
-                      <Form.Label htmlFor="item-stock-field">
-                        Etat Enseignant
-                      </Form.Label>
-                      <Form.Control
-                        type="text"
-                        id="item-stock-field"
-                        placeholder=""
-                        required
-                      />
-                    </div>
-
-                    <div
-                      className="mb-3"
-                      style={{
-                        direction: "rtl",
-                        textAlign: "right",
-                      }}
-                    >
-                      <Form.Label htmlFor="phone-field">
-                        حالة الأستاذ
-                      </Form.Label>
-                      <Form.Control
-                        type="text"
-                        id="phone-field"
-                        placeholder=""
-                        required
-                      />
-                    </div>
-                  </Modal.Body>
-                  <div className="modal-footer">
-                    <div className="hstack gap-2 justify-content-end">
-                      <Button
-                        className="btn-ghost-danger"
-                        onClick={() => {
-                          tog_AddParametreModals();
-                        }}
-                      >
-                        Fermer
-                      </Button>
-                      <Button variant="success" id="add-btn">
-                        Ajouter
-                      </Button>
-                    </div>
-                  </div>
-                </Form>
-              </Modal> */}
 
               <Card>
                 <Card.Body className="p-0">
@@ -329,7 +305,7 @@ const ListEtatEnseignants = () => {
                   >
                     <TableContainer
                       columns={columns || []}
-                      data={data || []}
+                      data={filteredEtatCompteEnseignants || []}
                       // isGlobalFilter={false}
                       iscustomPageSize={false}
                       isBordered={false}
@@ -358,6 +334,150 @@ const ListEtatEnseignants = () => {
                 </Card.Body>
               </Card>
             </Col>
+
+            {/* Add etat enseignant */}
+            <Modal
+              show={isAddModalOpen}
+              onHide={() => setAddModalOpen(false)}
+              centered
+            >
+              <Modal.Header className="px-4 pt-4" closeButton>
+                <h5 className="modal-title" id="exampleModalLabel">
+                  Ajouter Etat Compte Enseignant
+                </h5>
+              </Modal.Header>
+              <Form
+                className="tablelist-form"
+                onSubmit={onSubmitEtatEnseignant}
+              >
+                <Modal.Body className="p-4">
+                  <Row>
+                    <Col lg={6}>
+                      <div className="mb-3">
+                        <Form.Label htmlFor="etat_fr">
+                          Etat Compte Enseignant
+                        </Form.Label>
+                        <Form.Control
+                          type="text"
+                          id="etat_fr"
+                          placeholder=""
+                          required
+                          onChange={onChange}
+                          value={formData.etat_fr}
+                        />
+                      </div>
+                    </Col>
+
+                    <Col lg={6}>
+                      <div
+                        className="mb-3"
+                        style={{
+                          direction: "rtl",
+                          textAlign: "right",
+                        }}
+                      >
+                        <Form.Label htmlFor="etat_ar">
+                          حالة حساب الأستاذ
+                        </Form.Label>
+                        <Form.Control
+                          type="text"
+                          id="etat_ar"
+                          placeholder=""
+                          required
+                          onChange={onChange}
+                          value={formData.etat_ar}
+                        />
+                      </div>
+                    </Col>
+                  </Row>
+                </Modal.Body>
+                <div className="modal-footer">
+                  <div className="hstack gap-2 justify-content-end">
+                    <Button className="btn-ghost-danger">Fermer</Button>
+                    <Button
+                      variant="success"
+                      id="add-btn"
+                      type="submit"
+                      onClick={tog_AddOrderModals}
+                    >
+                      Ajouter
+                    </Button>
+                  </div>
+                </div>
+              </Form>
+            </Modal>
+
+            {/*Edit etat enseignant */}
+            <Modal
+              show={showEditModal}
+              onHide={() => setShowEditModal(false)}
+              centered
+            >
+              <Modal.Header className="px-4 pt-4" closeButton>
+                <h5 className="modal-title" id="exampleModalLabel">
+                  Modifier Etat Compte Enseignant
+                </h5>
+              </Modal.Header>
+              <Form
+                className="tablelist-form"
+                onSubmit={onSubmitEditEtatCompteEnseignant}
+              >
+                <Modal.Body className="p-4">
+                  <Row>
+                    <Col lg={6}>
+                      <div className="mb-3">
+                        <Form.Label htmlFor="etat_fr">
+                          Etat Compte Enseignant
+                        </Form.Label>
+                        <Form.Control
+                          type="text"
+                          id="etat_fr"
+                          placeholder=""
+                          required
+                          onChange={onChange}
+                          value={formData.etat_fr}
+                        />
+                      </div>
+                    </Col>
+
+                    <Col lg={6}>
+                      <div
+                        className="mb-3"
+                        style={{
+                          direction: "rtl",
+                          textAlign: "right",
+                        }}
+                      >
+                        <Form.Label htmlFor="etat_ar">
+                          حالة حساب الأستاذ
+                        </Form.Label>
+                        <Form.Control
+                          type="text"
+                          id="etat_ar"
+                          placeholder=""
+                          required
+                          onChange={onChange}
+                          value={formData.etat_ar}
+                        />
+                      </div>
+                    </Col>
+                  </Row>
+                </Modal.Body>
+                <div className="modal-footer">
+                  <div className="hstack gap-2 justify-content-end">
+                    <Button
+                      className="btn-ghost-danger"
+                      onClick={() => setShowEditModal(false)}
+                    >
+                      Fermer
+                    </Button>
+                    <Button variant="success" id="add-btn" type="submit">
+                      Enregistrer
+                    </Button>
+                  </div>
+                </div>
+              </Form>
+            </Modal>
           </Row>
         </Container>
       </div>

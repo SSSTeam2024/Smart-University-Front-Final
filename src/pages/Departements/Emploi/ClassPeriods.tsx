@@ -70,8 +70,9 @@ const ListClassPeriods = () => {
   const handleAddClick = async () => {
     if (schedules.length > 0) {
       const currentDate = new Date();
+      const dateParam = formatDate(currentDate)
       const { nextSunday, nextMonday } = getNextSundayAndMonday(
-        convertStringToDate(/* "10-11-2024" */ currentDate) /* currentDate */
+        convertStringToDate(/* "10-11-2024" */ dateParam) /* currentDate */
       );
       console.log("Next Saturday:", nextSunday);
       console.log("Next Monday:", nextMonday);
@@ -108,6 +109,7 @@ const ListClassPeriods = () => {
   };
 
   const convertStringToDate = (dateStr: any) => {
+    console.log("date str",dateStr)
     const [day, month, year] = dateStr.split("-").map(Number);
     // Months are 0-indexed in JavaScript Date (0 = January, 1 = February, etc.)
     return new Date(year, month - 1, day);
@@ -274,7 +276,7 @@ const ListClassPeriods = () => {
               <li>
                 {classEmploi.etat === "En élaboration" ? (
                   <Link
-                    to="/gestion-emplois-classe/gestion-emplois-classe"
+                    to="/gestion-emplois/emploi-classe/single-emplois"
                     state={classEmploi}
                     className="badge bg-primary-subtle text-primary edit-item-btn"
                   >
@@ -295,7 +297,7 @@ const ListClassPeriods = () => {
                   </Link>
                 ) : (
                   <Link
-                    to="/gestion-emplois-classe/gestion-emplois-classe"
+                    to="/gestion-emplois/emploi-classe/single-emplois"
                     state={classEmploi}
                     className="badge bg-warning-subtle text-warning edit-item-btn"
                   >

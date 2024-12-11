@@ -6,8 +6,33 @@ export interface FileDetail {
   base64String?: string;
   extension?: string;
 }
-export interface Etudiant {
+interface Section {
   _id: string;
+  name_section_fr: string;
+  name_section_ar: string;
+  abreviation: string;
+  departements: string[];
+}
+
+interface NiveauClasse {
+  _id: string;
+  name_niveau_ar: string;
+  name_niveau_fr: string;
+  abreviation: string;
+  sections: Section[]; // Ensure this is defined as an array
+}
+
+interface GroupeClasse {
+  _id: string;
+  nom_classe_fr: string;
+  nom_classe_ar: string;
+  departement: string;
+  niveau_classe: NiveauClasse;
+  matieres: string[];
+}
+
+export interface Etudiant {
+  _id?: string;
   nom_fr: string;
   nom_ar: string;
   prenom_fr: string;
@@ -28,15 +53,7 @@ export interface Etudiant {
     etat_ar: string;
     etat_fr: string;
   };
-  groupe_classe:{
-    _id: string;
-    nom_classe_fr: string,
-    nom_classe_ar: string,
-    departement: string ,
-    niveau_classe: string,
-    section_classe: string ,
-    matieres: string[];
-  },
+  groupe_classe: GroupeClasse;
   state: string;
   dependence: string;
   code_postale: string;
@@ -58,7 +75,10 @@ export interface Etudiant {
     value_type_inscription: string;
     type_ar: string;
     type_fr: string;
-    files_type_inscription:string[]
+    files_type_inscription: {
+      name_ar: string;
+      name_fr: string;
+    }[];
   };
   Face1CINFileBase64String: string;
   Face1CINFileExtension: string;
@@ -71,6 +91,7 @@ export interface Etudiant {
   PhotoProfilFileExtension: string;
   PhotoProfilFileBase64String: string;
 }
+
 export const etudiantSlice = createApi({
   reducerPath: "Etudiant",
   baseQuery: fetchBaseQuery({
@@ -106,14 +127,22 @@ export const etudiantSlice = createApi({
         },
         invalidatesTags: ["Etudiant"],
       }),
-        updateEtudiant: builder.mutation<void, Etudiant>({
-          query: (etudiant) => ({
+      updateEtudiant: builder.mutation<void, Etudiant>({
+        query: ({ _id, ...rest }) => {
+          console.log("Payload being sent to the backend:", { id: _id, ...rest });
+      
+          if (!_id) {
+            throw new Error("No student ID provided");
+          }
+      
+          return {
             url: `/update-etudiant`,
             method: "PUT",
-            body: etudiant,
-          }),
-          invalidatesTags: ["Etudiant"],
-        }),
+            body: { id: _id, ...rest },
+          };
+        },
+        invalidatesTags: ["Etudiant"],
+      }),
         deleteEtudiant: builder.mutation<Etudiant, {_id: string}>({
           query: (_id) => ({
             url: `/delete-etudiant`,
@@ -122,8 +151,16 @@ export const etudiantSlice = createApi({
           }),
           invalidatesTags: ["Etudiant"],
         }),
+        getTypeInscriptionByIdStudent: builder.mutation<any, { studentId: string }>({
+          query: ({ studentId }) => ({
+            url: `/type-inscription`,
+            method: "POST",
+            body: { studentId },
+          }),
+          invalidatesTags: ["Etudiant"],
+        }),
     };
   },
 });
 
-export const { useAddEtudiantMutation, useFetchEtudiantsQuery, useFetchEtudiantByIdQuery, useDeleteEtudiantMutation, useUpdateEtudiantMutation } = etudiantSlice;
+export const { useAddEtudiantMutation, useFetchEtudiantsQuery, useFetchEtudiantByIdQuery, useDeleteEtudiantMutation, useUpdateEtudiantMutation, useGetTypeInscriptionByIdStudentMutation } = etudiantSlice;
