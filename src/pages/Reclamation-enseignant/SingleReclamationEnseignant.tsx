@@ -46,7 +46,7 @@ const SingleReclamationEnseignant = () => {
     setShowModal(true);
   };
 
-  const currentStatus = location.state.status;
+  const currentStatus = location.state?.status!;
   const photoUrls = location.state?.photos
     ? location.state?.photos.map(
         (photo: any) =>
@@ -202,7 +202,7 @@ const SingleReclamationEnseignant = () => {
                                     <td className="">Description:</td>
                                     <td>
                                       <span className="mb-1 ">
-                                        {location.state.description}
+                                        {location.state?.description!}
                                       </span>
                                     </td>
                                   </tr>
@@ -210,7 +210,7 @@ const SingleReclamationEnseignant = () => {
                                     <td className="">Date de création</td>
                                     <td>
                                       {new Date(
-                                        location.state.createdAt
+                                        location.state?.createdAt!
                                       ).toLocaleDateString("fr-FR", {
                                         day: "2-digit",
                                         month: "2-digit",
@@ -222,7 +222,7 @@ const SingleReclamationEnseignant = () => {
                                     <td className="">Date d'exécution</td>
                                     <td>
                                       {new Date(
-                                        location.state.updatedAt
+                                        location.state?.updatedAt!
                                       ).toLocaleDateString("fr-FR", {
                                         day: "2-digit",
                                         month: "2-digit",
@@ -234,7 +234,7 @@ const SingleReclamationEnseignant = () => {
                                     <td>Réponse :</td>
                                     <td>
                                       <span className="mb-1 ">
-                                        {location.state.response}
+                                        {location.state?.response!}
                                       </span>
                                     </td>
                                   </tr>

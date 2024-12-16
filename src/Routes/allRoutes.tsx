@@ -228,6 +228,7 @@ import ListFicheVoeux from "pages/Departements/FicheVoeux/ListeFicheVoeux";
 import EditFicheVoeux from "pages/Departements/FicheVoeux/EditFicheVoeux";
 import SingleEmploiClasse from "pages/Departements/Emploi/GestionEmploiClasse";
 import ListeEmploisClasse from "pages/Departements/Emploi/ListeEmploisClasse";
+import EditProfilEnseignant from "pages/Gestion-enseignant/EditProfilEnseignant";
 const authProtectedRoutes = [
     { path: "/dashboard", component: <Dashboard /> },
 
@@ -266,7 +267,7 @@ const authProtectedRoutes = [
    { path: "/gestion-enseignant/ajouter-enseignant", component: <AjouterEnseignant /> },
    { path: "/gestion-enseignant/liste-enseignants", component: <ListEnseignants /> },
    { path: "/gestion-enseignant/compte-enseignant", component: <AccountEnseignant /> },
-
+   { path: "/gestion-enseignant/edit-compte-enseignant", component: <EditProfilEnseignant/> },
    // Dossier Administratif Enseignant
 { path: "/gestion-enseignant/ajouter-dossier-administartif",component: <AddDossieradministratif />,},
 { path: "/gestion-enseignant/liste-dossier-administartif", component: <ListeDossierAdministratif />,},
@@ -445,8 +446,8 @@ const authProtectedRoutes = [
 {path: "/gestion-emplois/gestion-fiche-voeux/edit-fiche-voeux",component: <EditFicheVoeux />,},
 
   // liste des rattrapages
-  { path: "/ajouter-rattrapage",component: <AjouterRattrapage />,},
- 
+  { path: "/rattrapage/ajouter-rattrapage",component: <AjouterRattrapage />,},
+  { path: "/rattrapage/liste-rattrapages", component: <ListeRattrapages /> },
 
   //gestion emploi classes periods
   { path: "/gestion-emplois/emploi-classe/liste-emplois",component: <ListeEmploisClasse />, }, // liste classe 
@@ -461,9 +462,8 @@ const authProtectedRoutes = [
 
 
 
- //liset rattrapages
 
- { path: "/liste-rattrapages", component: <ListeRattrapages /> },
+ 
 
 
 

@@ -17,12 +17,12 @@ const ReclamationEtudiantTable = () => {
 
     const location = useLocation();
     const studentDetails = location.state;
-    const idStudent = studentDetails?._id
+    const idStudent = studentDetails?._id!
     console.log("id student",idStudent)
 
 
     const { data: reclamations, error, isLoading } = useFetchReclamationsQuery();
-    const filteredReclamation = reclamations?.filter((reclamation) => (reclamation.studentId as unknown as { _id: string })._id === idStudent);
+    const filteredReclamation = reclamations?.filter((reclamation) => (reclamation?.studentId! as unknown as { _id?: string })?._id! === idStudent);
 
     console.log("filtered demandes", filteredReclamation);
 

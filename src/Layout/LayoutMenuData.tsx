@@ -871,14 +871,14 @@ const Navdata = () => {
       {
         id: "AjouterRattrapage",
         label: "Ajouter un Rattrapage",
-        link: "/ajouter-rattrapage",
+        link: "/rattrapage/ajouter-rattrapage",
         parentId: "Gestion-des-rattrapages",
         icon: "bi bi-calendar2-plus",
       },
       {
         id: "GestionRattrapages",
         label: "Liste Des Rattrapages",
-        link: "/liste-rattrapages",
+        link: "/rattrapage/liste-rattrapages",
         parentId: "Gestion-des-rattrapages",
         icon: "bi bi-card-list",
       },

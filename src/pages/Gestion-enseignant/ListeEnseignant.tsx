@@ -6,26 +6,26 @@ import { Link, useNavigate } from "react-router-dom";
 import TableContainer from "Common/TableContainer";
 import Swal from "sweetalert2";
 import userImage from "../../assets/images/profile-bg.jpg";
-import {
-  Enseignant,
-  useDeleteEnseignantMutation,
-  useFetchEnseignantsQuery,
-} from "features/enseignant/enseignantSlice";
+import {Enseignant,useDeleteEnseignantMutation,useFetchEnseignantsQuery,} from "features/enseignant/enseignantSlice";
+import { actionAuthorization } from 'utils/pathVerification';
+import { RootState } from 'app/store';
+import { useSelector } from 'react-redux';
+import { selectCurrentUser } from 'features/account/authSlice';
+
 
 const ListEnseignants = () => {
   document.title = "Liste des enseignants | Smart University";
+  const user = useSelector((state: RootState) => selectCurrentUser(state));
 
   const navigate = useNavigate();
 
   const [modal_AddEnseignantModals, setmodal_AddEnseignantModals] =
     useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState("");
-  function tog_AddEnseignantModals() {
-    navigate("/AjouterEnseignant");
-  }
+ 
 
   function tog_AddEnseignant() {
-    navigate("/AjouterEnseignant");
+    navigate("/gestion-enseignant/ajouter-enseignant");
   }
   const { data = [] } = useFetchEnseignantsQuery();
   console.log(data);
@@ -235,9 +235,12 @@ const ListEnseignants = () => {
         accessor: (enseignant: Enseignant) => {
           return (
             <ul className="hstack gap-2 list-unstyled mb-0">
+        {actionAuthorization("/gestion-etudiant/compte-etudiant",user?.permissions!)? 
+
               <li>
+
                 <Link
-                  to="/accountEnseignant"
+                  to="/gestion-enseignant/compte-enseignant"
                   className="badge bg-info-subtle text-info view-item-btn"
                   state={enseignant}
                 >
@@ -256,10 +259,12 @@ const ListEnseignants = () => {
                     }
                   ></i>
                 </Link>
-              </li>
+              </li> : <></> }
+              {actionAuthorization("/gestion-enseignant/edit-compte-enseignant",user?.permissions!)?
+
               <li>
                 <Link
-                  to="/modfierProfilEnseignant"
+                  to="/gestion-enseignant/edit-compte-enseignant"
                   className="badge bg-primary-subtle text-primary edit-item-btn"
                   state={enseignant}
                 >
@@ -278,7 +283,9 @@ const ListEnseignants = () => {
                     }
                   ></i>
                 </Link>
-              </li>
+              </li>  : <></> }
+              {actionAuthorization("/gestion-enseignant/supprimer-compte-enseignant",user?.permissions!)?
+
               <li>
                 <Link
                   to="#"
@@ -300,7 +307,7 @@ const ListEnseignants = () => {
                     onClick={() => AlertDelete(enseignant?._id!)}
                   ></i>
                 </Link>
-              </li>
+              </li> : <></> }
             </ul>
           );
         },

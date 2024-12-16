@@ -29,7 +29,7 @@ import withRouter from "Common/withRouter";
 
 //Social Media Imports
 import { GoogleLogin } from "react-google-login";
-import FacebookLogin from "react-facebook-login/dist/facebook-login-render-props";
+// import FacebookLogin from "react-facebook-login/dist/facebook-login-render-props";
 
 //Import config
 import { facebook, google } from "../../config";

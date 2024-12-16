@@ -12,10 +12,10 @@ import {
 import { format } from "date-fns";
 import userImage from "../../assets/images/profile-bg.jpg";
 import Swal from "sweetalert2";
-import { actionAuthorization } from 'utils/pathVerification';
-import { RootState } from 'app/store';
-import { useSelector } from 'react-redux';
-import { selectCurrentUser } from 'features/account/authSlice';
+import { actionAuthorization } from "utils/pathVerification";
+import { RootState } from "app/store";
+import { useSelector } from "react-redux";
+import { selectCurrentUser } from "features/account/authSlice";
 
 const ListEtudiants = () => {
   document.title = "Liste des étudiants | Smart University";
@@ -25,9 +25,7 @@ const ListEtudiants = () => {
 
   const [modal_AddEnseignantModals, setmodal_AddEnseignantModals] =
     useState<boolean>(false);
-  function tog_AddEnseignantModals() {
-    navigate("/gestion-etudiant/ajouter-etudiant");
-  }
+
   function tog_AddEtudiant() {
     navigate("/gestion-etudiant/ajouter-etudiant");
   }
@@ -53,24 +51,29 @@ const ListEtudiants = () => {
   const handleDeleteEtudiant = async (id: string) => {
     try {
       const result = await Swal.fire({
-        title: 'Êtes-vous sûr ?',
+        title: "Êtes-vous sûr ?",
         text: "Vous ne pourrez pas revenir en arrière !",
-        icon: 'warning',
+        icon: "warning",
         showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Oui, supprimer !'
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Oui, supprimer !",
       });
 
       if (result.isConfirmed) {
         await deleteEtudiant({ _id: id }).unwrap();
-        Swal.fire('Supprimé !', 'L\'étudiant a été supprimée.', 'success');
-      //  refetch(); // Recharger les données ou mettre à jour l'UI
+        Swal.fire("Supprimé !", "L'étudiant a été supprimée.", "success");
+        //  refetch(); // Recharger les données ou mettre à jour l'UI
       }
     } catch (error) {
       console.error("Erreur lors de la suppression de l'étudiant :", error);
-      Swal.fire('Erreur !', 'Un problème est survenu lors de la suppression de l\'étudiant.', 'error');
-    } }
+      Swal.fire(
+        "Erreur !",
+        "Un problème est survenu lors de la suppression de l'étudiant.",
+        "error"
+      );
+    }
+  };
   const activatedStudentsCount = data.filter(
     (student) => student.etat_compte?.etat_fr === "Inscrit / Activé"
   ).length;
@@ -99,7 +102,7 @@ const ListEtudiants = () => {
                 />
               </div>
               <div className="flex-grow-1 user_name">
-                {etudiants.nom_fr} {etudiants.prenom_fr}
+                {etudiants?.nom_fr!} {etudiants?.prenom_fr!}
               </div>
             </div>
           );
@@ -113,7 +116,7 @@ const ListEtudiants = () => {
       },
       {
         Header: "Nom et Prénom",
-        accessor: (row: any) => `${row.prenom_fr} ${row.nom_fr}`,
+        accessor: (row: any) => `${row?.prenom_fr!} ${row?.nom_fr!}`,
         disableFilters: true,
         filterable: true,
       },
@@ -174,75 +177,93 @@ const ListEtudiants = () => {
         accessor: (students: Etudiant) => {
           return (
             <ul className="hstack gap-2 list-unstyled mb-0">
-
-{actionAuthorization("/gestion-etudiant/compte-etudiant",user?.permissions!)?              <li>
-                <Link
-                  to="/gestion-etudiant/compte-etudiant"
-                  className="badge bg-info-subtle text-info view-item-btn"
-                  state={students}
-                >
-                  <i
-                    className="ph ph-eye"
-                    style={{
-                      transition: "transform 0.3s ease-in-out",
-                      cursor: "pointer",
-                      fontSize: "1.5em",
-                    }}
-                    onMouseEnter={(e) =>
-                      (e.currentTarget.style.transform = "scale(1.4)")
-                    }
-                    onMouseLeave={(e) =>
-                      (e.currentTarget.style.transform = "scale(1)")
-                    }
-                  ></i>
-                </Link>
-              </li>: <></> }
-              {actionAuthorization("/gestion-etudiant/edit-compte-etudiant",user?.permissions!)?
-              <li>
-                <Link
-                  to="/gestion-etudiant/edit-compte-etudiant"
-                  className="badge bg-primary-subtle text-primary edit-item-btn"
-                  state={students}
-                >
-                  <i
-                    className="ph ph-pencil-line"
-                    style={{
-                      transition: "transform 0.3s ease-in-out",
-                      cursor: "pointer",
-                      fontSize: "1.5em",
-                    }}
-                    onMouseEnter={(e) =>
-                      (e.currentTarget.style.transform = "scale(1.2)")
-                    }
-                    onMouseLeave={(e) =>
-                      (e.currentTarget.style.transform = "scale(1)")
-                    }
-                  ></i>
-                </Link>
-              </li>: <></> }
-              {actionAuthorization("/gestion-etudiant/supprimer-compte-etudiant",user?.permissions!)?
-              <li>
-                <Link
-                  to="#"
-                  className="badge bg-danger-subtle text-danger remove-item-btn"
-                >
-                  <i
-                    className="ph ph-trash"
-                    style={{
-                      transition: "transform 0.3s ease-in-out",
-                      cursor: "pointer",
-                      fontSize: "1.5em",
-                    }}
-                    onMouseEnter={(e) =>
-                      (e.currentTarget.style.transform = "scale(1.2)")
-                    }
-                    onMouseLeave={(e) =>
-                      (e.currentTarget.style.transform = "scale(1)")
-                    }
-                    onClick={() => handleDeleteEtudiant(students?._id!)}
-                  ></i>
-                </Link>
-              </li>: <></> }
+              {actionAuthorization(
+                "/gestion-etudiant/compte-etudiant",
+                user?.permissions!
+              ) ? (
+                <li>
+                  <Link
+                    to="/gestion-etudiant/compte-etudiant"
+                    className="badge bg-info-subtle text-info view-item-btn"
+                    state={students}
+                  >
+                    <i
+                      className="ph ph-eye"
+                      style={{
+                        transition: "transform 0.3s ease-in-out",
+                        cursor: "pointer",
+                        fontSize: "1.5em",
+                      }}
+                      onMouseEnter={(e) =>
+                        (e.currentTarget.style.transform = "scale(1.4)")
+                      }
+                      onMouseLeave={(e) =>
+                        (e.currentTarget.style.transform = "scale(1)")
+                      }
+                    ></i>
+                  </Link>
+                </li>
+              ) : (
+                <></>
+              )}
+              {actionAuthorization(
+                "/gestion-etudiant/edit-compte-etudiant",
+                user?.permissions!
+              ) ? (
+                <li>
+                  <Link
+                    to="/gestion-etudiant/edit-compte-etudiant"
+                    className="badge bg-primary-subtle text-primary edit-item-btn"
+                    state={students}
+                  >
+                    <i
+                      className="ph ph-pencil-line"
+                      style={{
+                        transition: "transform 0.3s ease-in-out",
+                        cursor: "pointer",
+                        fontSize: "1.5em",
+                      }}
+                      onMouseEnter={(e) =>
+                        (e.currentTarget.style.transform = "scale(1.2)")
+                      }
+                      onMouseLeave={(e) =>
+                        (e.currentTarget.style.transform = "scale(1)")
+                      }
+                    ></i>
+                  </Link>
+                </li>
+              ) : (
+                <></>
+              )}
+              {actionAuthorization(
+                "/gestion-etudiant/supprimer-compte-etudiant",
+                user?.permissions!
+              ) ? (
+                <li>
+                  <Link
+                    to="#"
+                    className="badge bg-danger-subtle text-danger remove-item-btn"
+                  >
+                    <i
+                      className="ph ph-trash"
+                      style={{
+                        transition: "transform 0.3s ease-in-out",
+                        cursor: "pointer",
+                        fontSize: "1.5em",
+                      }}
+                      onMouseEnter={(e) =>
+                        (e.currentTarget.style.transform = "scale(1.2)")
+                      }
+                      onMouseLeave={(e) =>
+                        (e.currentTarget.style.transform = "scale(1)")
+                      }
+                      onClick={() => handleDeleteEtudiant(students?._id!)}
+                    ></i>
+                  </Link>
+                </li>
+              ) : (
+                <></>
+              )}
             </ul>
           );
         },

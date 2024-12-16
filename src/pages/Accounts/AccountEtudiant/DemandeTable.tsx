@@ -24,7 +24,7 @@ const DemandeTable = () => {
 
 
     const { data: demandes, error, isLoading } = useFetchDemandeEtudiantQuery();
-    const filteredDemandes = demandes?.filter((demande) => (demande.studentId as unknown as { _id: string })._id === idStudent);
+    const filteredDemandes = demandes?.filter((demande) => (demande?.studentId! as unknown as { _id: string })?._id! === idStudent);
 
     console.log("filtered demandes", filteredDemandes);
 

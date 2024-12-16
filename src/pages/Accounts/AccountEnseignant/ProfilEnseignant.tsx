@@ -47,7 +47,7 @@ const ProfilEnseignant = () => {
   }
 
   if (!enseignantDetails) {
-    return <p>enseignantDetails non trouvé.</p>;
+    return <p>enseignant  non trouvé.</p>;
   }
 
 
@@ -126,7 +126,7 @@ const ProfilEnseignant = () => {
             </Nav.Item>
           </Nav>
           <div className="flex-shrink-0">
-            <Link to="/settings" className="btn btn-success">
+            <Link to="/gestion-enseignant/edit-compte-enseignant" className="btn btn-success">
               Modifier le profil
             </Link>
           </div>
