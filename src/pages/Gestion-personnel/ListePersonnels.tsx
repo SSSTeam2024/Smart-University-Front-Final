@@ -209,7 +209,7 @@ const ListePersonnels = () => {
               </li>
               <li>
                 <Link
-                  to="/EditProfilePersonnel"
+                  to="/gestion-personnel/edit-compte-personnel"
                   className="badge bg-primary-subtle text-primary edit-item-btn"
                   state={personnel}
                 >

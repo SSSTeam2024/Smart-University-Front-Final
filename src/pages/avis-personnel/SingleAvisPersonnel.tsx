@@ -6,8 +6,8 @@ import Breadcrumb from "Common/BreadCrumb";
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
-const SingleAvisEnseignant = () => {
-  document.title = "Avis Enseignant | Smart University";
+const SingleAvisPersonnel = () => {
+  document.title = "Avis Personnel | Smart University";
   const location = useLocation();
   const { title, gallery, description, auteurId, date_avis, createdAt, lien } = location.state;
 
@@ -60,5 +60,5 @@ const SingleAvisEnseignant = () => {
   );
 };
 
-export default SingleAvisEnseignant;
+export default SingleAvisPersonnel;
 

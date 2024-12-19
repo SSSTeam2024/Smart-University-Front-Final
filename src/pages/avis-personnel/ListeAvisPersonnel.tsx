@@ -11,7 +11,7 @@ import { RootState } from 'app/store';
 import { useSelector } from 'react-redux';
 import { selectCurrentUser } from 'features/account/authSlice'; 
 import { actionAuthorization } from 'utils/pathVerification';
-import { useFetchAvisEnseignantQuery, AvisEnseignant } from "features/avisEnseignant/avisEnseignantSlice";
+import { useFetchAvisPersonnelQuery, AvisPersonnel } from "features/avisPersonnel/avisPersonnelSlice";
 
 
 const ListeAvisEtudiant = () => {
@@ -19,8 +19,8 @@ const ListeAvisEtudiant = () => {
 
     const user = useSelector((state: RootState) => selectCurrentUser(state));
 
-    const { data: avisEnseignant, error, isLoading } = useFetchAvisEnseignantQuery();
-console.log("avisenseignat", avisEnseignant)
+    const { data: avisPersonnel, error, isLoading } = useFetchAvisPersonnelQuery();
+console.log("avisenseignat", avisPersonnel)
 
     const [modal_AddUserModals, setmodal_AddUserModals] = useState<boolean>(false);
     const [isMultiDeleteButton, setIsMultiDeleteButton] = useState<boolean>(false)
@@ -152,7 +152,7 @@ console.log("avisenseignat", avisEnseignant)
                   {actionAuthorization("/avis-personnel/edit-avis-personnel",user?.permissions!)?
              <li>
                 <Link
-                  to="#GroupDetails"
+                  to="/avis-personnel/edit-avis-personnel"
                   className="badge bg-success-subtle text-success edit-item-btn"
                 >
                   <i
@@ -234,7 +234,7 @@ console.log("avisenseignat", avisEnseignant)
                                     
                                         <TableContainer
                                             columns={(columns || [])}
-                                            data={(avisEnseignant || [])}
+                                            data={(avisPersonnel || [])}
                                             // isGlobalFilter={false}
                                             iscustomPageSize={false}
                                             isBordered={false}

@@ -822,6 +822,12 @@ const Navdata = () => {
             link: "/gestion-emplois/emploi-classe/liste-emplois",
             icon: "bi bi-list-task",
           },
+          {
+            id: 2,
+            label: "Equilibre horaires",
+            link: "/gestion-emplois/emploi-classe/tableau-des-charges-horaires-classes",
+            icon: "bi bi-list-task",
+          },
         ],
       },
       {

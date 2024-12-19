@@ -229,6 +229,11 @@ import EditFicheVoeux from "pages/Departements/FicheVoeux/EditFicheVoeux";
 import SingleEmploiClasse from "pages/Departements/Emploi/GestionEmploiClasse";
 import ListeEmploisClasse from "pages/Departements/Emploi/ListeEmploisClasse";
 import EditProfilEnseignant from "pages/Gestion-enseignant/EditProfilEnseignant";
+import GestionEmploiEnseignant from "pages/Departements/EmploiEnseignant/GestionEmploiEnseignant";
+import TableauChargesHorairesClasses from "pages/Departements/Emploi/TableauChargesHorairesClasses";
+import EditProfilPersonnel from "pages/Gestion-personnel/EditProfilPersonnel";
+
+
 const authProtectedRoutes = [
     { path: "/dashboard", component: <Dashboard /> },
 
@@ -278,7 +283,7 @@ const authProtectedRoutes = [
    { path: "/gestion-personnel/ajouter-personnel", component: <AjouterPersonnels /> },
    { path: "/gestion-personnel/liste-personnels", component: <ListPersonnels /> },
    { path: "/gestion-personnel/compte-personnel", component: <AccountPersonnel /> },
-    
+   { path: "/gestion-personnel/edit-compte-personnel", component: <EditProfilPersonnel/> },
   //Dossier administratif personnel
 { path: "/gestion-personnel/ajouter-dossier-administartif", component: <AddDossieradministratifPersonnels />,},
 { path: "/gestion-personnel/liste-dossier-administartif", component: <ListeDossierAdministratifPersonnels />,},
@@ -454,12 +459,13 @@ const authProtectedRoutes = [
   { path: "/gestion-emplois/emploi-classe/single-emplois", component: <SingleEmploiClasse />, }, //view 
   { path: "/gestion-emplois/emploi-classe/liste-seance", component: <GestionSeances /> }, //view tableau des seance 
   { path: "/gestion-emplois/emploi-classe/periodes-classes", component: <ListClassPeriods /> },// creeer periode d emploi
- 
+  { path: "/gestion-emplois/emploi-classe/tableau-des-charges-horaires-classes",component: <TableauChargesHorairesClasses />,},
+
   //gestion emploi enseignant
  { path: "/gestion-emplois/emlpoi-enseignant/single-emplois", component: <SingleEmploiEnseignant /> },
  {path: "/gestion-emplois/emlpoi-enseignant/liste-emplois",component: <ListeEmploiEnseignants />,},
  {path: "/gestion-emplois/emlpoi-enseignant/tableau-charges-horaires",component: <TableauChargesHoraires />,},
-
+{ path: "/gestion-emplois/emlpoi-enseignant/teacher-period", component: <TeacherPeriod /> },
 
 
 

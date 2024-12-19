@@ -59,7 +59,7 @@ if (canAccess === false) {
   if(!tokenc){
     return <Navigate to="/login" />;
   } else if(tokenc)
-  return <Navigate to="/auth-404" />;
+  return <Navigate to="/login" />;
 }
 
 return <>{props.children}</>;

@@ -14,7 +14,7 @@ import { actionAuthorization } from 'utils/pathVerification';
 import { useFetchAvisEnseignantQuery, AvisEnseignant } from "features/avisEnseignant/avisEnseignantSlice";
 
 
-const ListeAvisEtudiant = () => {
+const ListeAvisEnseignant = () => {
     document.title = "Avis Enseignant | Smart Institute";
 
     const user = useSelector((state: RootState) => selectCurrentUser(state));
@@ -152,8 +152,9 @@ console.log("avisenseignat", avisEnseignant)
                   {actionAuthorization("/avis-enseignant/edit-avis-enseignant",user?.permissions!)?
              <li>
                 <Link
-                  to="#GroupDetails"
+                  to="/avis-enseignant/edit-avis-enseignant"
                   className="badge bg-success-subtle text-success edit-item-btn"
+                  state={cellProps}
                 >
                   <i
                     className="ph ph-pencil-line"
@@ -280,4 +281,4 @@ console.log("avisenseignat", avisEnseignant)
     );
 };
 
-export default ListeAvisEtudiant;
+export default ListeAvisEnseignant;

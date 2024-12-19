@@ -1,4 +1,4 @@
-.container {
+.containerr {
     background: #ffffff;
     text-align: center;
     padding: 20%;
@@ -15,7 +15,7 @@
    * Loading Dots
    * Can we use pseudo elements here instead :after?
    */
-  .loading span {
+  .loadingg span {
     display: inline-block;
     vertical-align: middle;
     width: .6em;
@@ -30,27 +30,27 @@
    * Dots Colors
    * Smarter targeting vs nth-of-type?
    */
-  .loading span:nth-of-type(2) {
+  .loadingg span:nth-of-type(2) {
     background: #008FB2;
     animation-delay: 0.2s;
   }
-  .loading span:nth-of-type(3) {
+  .loadingg span:nth-of-type(3) {
     background: #009B9E;
     animation-delay: 0.4s;
   }
-  .loading span:nth-of-type(4) {
+  .loadingg span:nth-of-type(4) {
     background: #00A77D;
     animation-delay: 0.6s;
   }
-  .loading span:nth-of-type(5) {
+  .loadingg span:nth-of-type(5) {
     background: #00B247;
     animation-delay: 0.8s;
   }
-  .loading span:nth-of-type(6) {
+  .loadingg span:nth-of-type(6) {
     background: #5AB027;
     animation-delay: 1.0s;
   }
-  .loading span:nth-of-type(7) {
+  .loadingg span:nth-of-type(7) {
     background: #A0B61E;
     animation-delay: 1.2s;
   }
