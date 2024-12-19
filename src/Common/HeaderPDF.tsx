@@ -19,7 +19,7 @@ const HeaderPDF: React.FC<HeaderPDFProps> = ({
           style={{
             width: 100,
           }}
-          src={`http://localhost:5000/files/variableGlobaleFiles/logoEtablissementFiles/${logo_etablissement}`}
+          src={`${process.env.REACT_APP_API_URL}/files/variableGlobaleFiles/logoEtablissementFiles/${logo_etablissement}`}
         />
       </Col>
        <Col >
@@ -27,7 +27,7 @@ const HeaderPDF: React.FC<HeaderPDFProps> = ({
           style={{
             width: 50,
           }}
-          src={`http://localhost:5000/files/variableGlobaleFiles/logoRepubliqueFiles/${logo_republique}`}
+          src={`${process.env.REACT_APP_API_URL}/files/variableGlobaleFiles/logoRepubliqueFiles/${logo_republique}`}
         />
       </Col>
       <Col>
@@ -35,7 +35,7 @@ const HeaderPDF: React.FC<HeaderPDFProps> = ({
           style={{
             width: 100,
           }}
-          src={`http://localhost:5000/files/variableGlobaleFiles/logoUniversiteFiles/${logo_universite}`}
+          src={`${process.env.REACT_APP_API_URL}/files/variableGlobaleFiles/logoUniversiteFiles/${logo_universite}`}
         />
       </Col> 
     </Row>
@@ -78,13 +78,13 @@ export default HeaderPDF;
 //   logo_universite,
 // }: HeaderPDFProps) => {
 //   const logoEtablissementImage = await fetchImage(
-//     `http://localhost:5000/files/variableGlobaleFiles/logoEtablissementFiles/${logo_etablissement[2]}`
+//     `${process.env.REACT_APP_API_URL}/files/variableGlobaleFiles/logoEtablissementFiles/${logo_etablissement[2]}`
 //   );
 //   const logoRepubliqueImage = await fetchImage(
-//     `http://localhost:5000/files/variableGlobaleFiles/logoRepubliqueFiles/${logo_republique[2]}`
+//     `${process.env.REACT_APP_API_URL}/files/variableGlobaleFiles/logoRepubliqueFiles/${logo_republique[2]}`
 //   );
 //   const logoUniversiteImage = await fetchImage(
-//     `http://localhost:5000/files/variableGlobaleFiles/logoUniversiteFiles/${logo_universite[2]}`
+//     `${process.env.REACT_APP_API_URL}/files/variableGlobaleFiles/logoUniversiteFiles/${logo_universite[2]}`
 //   );
 
 //   const yPosition = 10; // The vertical position for the images

@@ -128,7 +128,7 @@ const ListEnseignants = () => {
             <div className="d-flex align-items-center gap-2">
               <div className="flex-shrink-0">
                 <img
-                  src={`http://localhost:5000/files/enseignantFiles/PhotoProfil/${enseignants.photo_profil}`}
+                  src={`${process.env.REACT_APP_API_URL}/files/enseignantFiles/PhotoProfil/${enseignants.photo_profil}`}
                   alt="etudiant-img"
                   id="photo_profil"
                   className="avatar-xs rounded-circle user-profile-img"

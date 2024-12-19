@@ -547,7 +547,7 @@ const EditProfilPersonnel = () => {
         const fetchImageData = async () => {
           try {
             const response = await fetch(
-              `http://localhost:5000/files/personnelFiles/PhotoProfil/${personnel.photo_profil}`
+              `${process.env.REACT_APP_API_URL}/files/personnelFiles/PhotoProfil/${personnel.photo_profil}`
             );
 
             if (!response.ok) {

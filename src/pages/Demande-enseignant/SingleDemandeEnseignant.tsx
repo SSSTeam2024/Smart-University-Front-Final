@@ -219,7 +219,7 @@ console.log(location.state?.enseignantId)
                     <Card.Body>
                       <div className="mt-n5">
                         <Image
-                           src={`http://localhost:5000/files/enseignantFiles/PhotoProfil/${location.state?.enseignantId.photo_profil}`}
+                           src={`${process.env.REACT_APP_API_URL}/files/enseignantFiles/PhotoProfil/${location.state?.enseignantId.photo_profil}`}
                           alt=""
                           className="avatar-xxl rounded-circle p-1 bg-body mt-n5"
                         />

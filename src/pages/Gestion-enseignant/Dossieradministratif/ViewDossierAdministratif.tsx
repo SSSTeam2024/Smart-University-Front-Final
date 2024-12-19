@@ -143,7 +143,7 @@ const ViewDossierAdministratif = () => {
         filterable: true,
         Cell: ({ cell: { value } }: { cell: { value: string } }) => (
           <a
-            href={`http://localhost:5000/files/dossierFiles/${value}`}
+            href={`${process.env.REACT_APP_API_URL}/files/dossierFiles/${value}`}
             target="_blank"
             rel="noopener noreferrer"
           >

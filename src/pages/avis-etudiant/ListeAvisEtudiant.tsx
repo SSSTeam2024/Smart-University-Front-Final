@@ -56,7 +56,7 @@ const ListeAvisEtudiant = () => {
     }
 
     const handleShowPdfModal = (fileName: string) => {
-      let link= 'http://localhost:5000/files/avisEtudiantFiles/pdf/'+fileName
+      let link= `${process.env.REACT_APP_API_URL}/files/avisEtudiantFiles/pdf/`+fileName
     
         setPdfUrl(link);
         setShowPdfModal(true);
@@ -307,7 +307,7 @@ export default ListeAvisEtudiant;
 
 //     // Modal handlers
 //     const handleShowPdfModal = (fileName: string) => {
-//         setPdfUrl(`http://localhost:5000/files/avisEtudiantFiles/pdf/${fileName}`);
+//         setPdfUrl(`${process.env.REACT_APP_API_URL}/files/avisEtudiantFiles/pdf/${fileName}`);
 //         setShowPdfModal(true);
 //     };
 

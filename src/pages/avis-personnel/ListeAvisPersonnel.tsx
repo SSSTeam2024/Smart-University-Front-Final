@@ -56,7 +56,7 @@ console.log("avisenseignat", avisPersonnel)
     }
 
     const handleShowPdfModal = (fileName: string) => {
-      let link= 'http://localhost:5000/files/avisPersonnelFiles/pdf/'+fileName
+      let link= `${process.env.REACT_APP_API_URL}/files/avisPersonnelFiles/pdf/`+fileName
     
         setPdfUrl(link);
         setShowPdfModal(true);

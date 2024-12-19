@@ -591,7 +591,7 @@ const EditProfilEnseignant = () => {
         const fetchImageData = async () => {
           try {
             const response = await fetch(
-              `http://localhost:5000/files/enseignantFiles/PhotoProfil/${enseignant.photo_profil}`
+              `${process.env.REACT_APP_API_URL}/files/enseignantFiles/PhotoProfil/${enseignant.photo_profil}`
             );
 
             if (!response.ok) {

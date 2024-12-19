@@ -23,7 +23,7 @@ export interface teacherSessionsPayload {
 export const seanceSlice = createApi({
   reducerPath: "Seance",
   baseQuery: fetchBaseQuery({
-    baseUrl: "http://localhost:5000/api/seance/",
+    baseUrl: `${process.env.REACT_APP_API_URL}/api/seance/`,
   }),
   tagTypes: ["Seance"],
   endpoints(builder) {

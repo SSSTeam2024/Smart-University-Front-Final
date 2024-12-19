@@ -48,13 +48,13 @@ const SingleReclamationPersonnel = () => {
   const photoUrls = location.state?.photos
     ? location.state?.photos.map(
         (photo: any) =>
-          `http://localhost:5000/files/reclamationPersonnelFiles/photo/${photo}`
+          `${process.env.REACT_APP_API_URL}/files/reclamationPersonnelFiles/photo/${photo}`
       )
     : [];
   const pdfUrl = location.state?.pdf
-    ? `http://localhost:5000/files/reclamationPersonnelFiles/pdf/${location.state.pdf}`
+    ? `${process.env.REACT_APP_API_URL}/files/reclamationPersonnelFiles/pdf/${location.state.pdf}`
     : "";
-  const videoUrl = location.state?.video  ? `http://localhost:5000/files/reclamationPersonnelFiles/video/${location.state.video}`
+  const videoUrl = location.state?.video  ? `${process.env.REACT_APP_API_URL}/files/reclamationPersonnelFiles/video/${location.state.video}`
   : "";
   console.log("currentStatus", currentStatus);
   console.log("photoUrls:", photoUrls);
@@ -97,7 +97,7 @@ return (
                <Card.Body>
 <div className="mt-n5">
   <Image
-    src={`http://localhost:5000/files/personnelFiles/PhotoProfil/${location.state?.personnelId.photo_profil}`}
+    src={`${process.env.REACT_APP_API_URL}/files/personnelFiles/PhotoProfil/${location.state?.personnelId.photo_profil}`}
     alt="Student Profile"
     className="rounded-circle p-1 bg-body mt-n5"
     width="150"

@@ -99,7 +99,7 @@ export { AuthProtected, AccessRoute };
 //     const fetchUserByToken = async () => {
 //       if (tokenc) {
 //         try {
-//           const rawResponse = await fetch('http://localhost:5000/api/user/get-user-by-token', {
+//           const rawResponse = await fetch('${process.env.REACT_APP_API_URL}/api/user/get-user-by-token', {
 //             method: 'POST',
 //             headers: {
 //               'Accept': 'application/json',

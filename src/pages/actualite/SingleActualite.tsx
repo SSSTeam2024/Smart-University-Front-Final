@@ -52,7 +52,7 @@
 //                       <Carousel.Item key={index}>
 //                         <Image
 //                           className="d-block w-100"
-//                           src={`http://localhost:5000/files/actualiteFiles/photo/${photo}`}
+//                           src={`${process.env.REACT_APP_API_URL}/files/actualiteFiles/photo/${photo}`}
 //                           alt={`Slide ${index}`}
 //                           style={{ height: "500px", objectFit: "cover" }}
 //                         />
@@ -129,7 +129,7 @@
 //                     <Card>
 //                       <Card.Img
 //                         variant="top"
-//                         src={article.gallery && article.gallery.length > 0 ? `http://localhost:5000/files/actualiteFiles/photo/${article.gallery[0]}` : actualite}
+//                         src={article.gallery && article.gallery.length > 0 ? `${process.env.REACT_APP_API_URL}/files/actualiteFiles/photo/${article.gallery[0]}` : actualite}
 //                         alt={article.title}
 //                         style={{ height: "200px", objectFit: "cover" }}
 //                       />
@@ -238,7 +238,7 @@ const SingleActualite = () => {
                       <Carousel.Item key={index}>
                         <Image
                           className="d-block w-100"
-                          src={`http://localhost:5000/files/actualiteFiles/photo/${photo}`}
+                          src={`${process.env.REACT_APP_API_URL}/files/actualiteFiles/photo/${photo}`}
                           alt={`Slide ${index}`}
                           style={{ height: "500px", objectFit: "cover" }}
                         />
@@ -317,7 +317,7 @@ const SingleActualite = () => {
                         variant="top"
                         src={
                           relatedArticle.gallery && relatedArticle.gallery.length > 0
-                            ? `http://localhost:5000/files/actualiteFiles/photo/${relatedArticle.gallery[0]}`
+                            ? `${process.env.REACT_APP_API_URL}/files/actualiteFiles/photo/${relatedArticle.gallery[0]}`
                             : actualite
                         }
                         alt={relatedArticle.title}

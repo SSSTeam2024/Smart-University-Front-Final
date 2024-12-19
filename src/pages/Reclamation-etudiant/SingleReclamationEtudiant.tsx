@@ -51,13 +51,13 @@ const SingleReclamationEtudiant = () => {
   const photoUrls = location.state?.photos
     ? location.state?.photos.map(
         (photo: any) =>
-          `http://localhost:5000/files/reclamationEtudiantFiles/photo/${photo}`
+          `${process.env.REACT_APP_API_URL}/files/reclamationEtudiantFiles/photo/${photo}`
       )
     : [];
   const pdfUrl = location.state?.pdf
-    ? `http://localhost:5000/files/reclamationEtudiantFiles/pdf/${location.state.pdf}`
+    ? `${process.env.REACT_APP_API_URL}/files/reclamationEtudiantFiles/pdf/${location.state.pdf}`
     : "";
-  const videoUrl = location.state?.video  ? `http://localhost:5000/files/reclamationEtudiantFiles/video/${location.state.video}`
+  const videoUrl = location.state?.video  ? `${process.env.REACT_APP_API_URL}/files/reclamationEtudiantFiles/video/${location.state.video}`
   : "";
   console.log("currentStatus", currentStatus);
   console.log("photoUrls:", photoUrls);

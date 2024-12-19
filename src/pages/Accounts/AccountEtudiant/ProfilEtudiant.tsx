@@ -124,7 +124,7 @@ const MyAccount = () => {
                     className="rounded-start img-fluid h-100 object-cover"
                     src={
                       etudiant.photo_profil
-                        ? `http://localhost:5000/files/etudiantFiles/PhotoProfil/${etudiant?.photo_profil!}`
+                        ? `${process.env.REACT_APP_API_URL}/files/etudiantFiles/PhotoProfil/${etudiant?.photo_profil!}`
                         : userImage
                     }
                     alt="Photo Profile"

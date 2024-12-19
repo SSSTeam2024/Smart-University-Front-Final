@@ -271,7 +271,7 @@ const ListeActualite = () => {
                               <Carousel.Item key={index}>
                                 <img
                                   className="d-block w-100"
-                                  src={`http://localhost:5000/files/actualiteFiles/photo/${photo}`}
+                                  src={`${process.env.REACT_APP_API_URL}/files/actualiteFiles/photo/${photo}`}
                                   alt={`Slide ${index}`}
                                   style={{ height: '200px', objectFit: 'cover' }}
                                 />

@@ -31,7 +31,7 @@ const SingleAvisEtudiant = () => {
                   <Carousel.Item key={index}>
                     <Image
                       className="d-block w-100"
-                      src={`http://localhost:5000/files/avisEtudiantFiles/photo/${photo}`}
+                      src={`${process.env.REACT_APP_API_URL}/files/avisEtudiantFiles/photo/${photo}`}
                       alt={`Slide ${index + 1}`}
                       style={{ maxHeight: "500px", objectFit: "cover" }}
                     />

@@ -15,7 +15,7 @@ export interface Payload {
 export const teachersPeriodsSlice = createApi({
   reducerPath: "TeacherPeriod",
   baseQuery: fetchBaseQuery({
-    baseUrl: "http://localhost:5000/api/teacher-period/",
+    baseUrl: `${process.env.REACT_APP_API_URL}/api/teacher-period/`,
   }),
   tagTypes: ["TeacherPeriod"],
   endpoints(builder) {

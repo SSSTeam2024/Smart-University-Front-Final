@@ -60,7 +60,7 @@ console.log("avisenseignat", demandeConge)
     }
 
     const handleShowPdfModal = (fileName: string) => {
-      let link= 'http://localhost:5000/files/congeFiles/demandeCongeFiles/'+fileName
+      let link= `${process.env.REACT_APP_API_URL}/files/congeFiles/demandeCongeFiles/`+fileName
     
         setPdfUrl(link);
         setShowPdfModal(true);

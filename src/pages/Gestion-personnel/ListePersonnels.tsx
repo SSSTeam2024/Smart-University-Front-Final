@@ -90,7 +90,7 @@ const ListePersonnels = () => {
               <div className="flex-shrink-0">
                 <img
                 style={{borderRadius:"50%"}}
-                  src={`http://localhost:5000/files/personnelFiles/PhotoProfil/${personnels.photo_profil}`}
+                  src={`${process.env.REACT_APP_API_URL}/files/personnelFiles/PhotoProfil/${personnels.photo_profil}`}
                   alt="etudiant-img"
                   id="photo_profil"
                   className="avatar-xs rounded-circle user-profile-img"

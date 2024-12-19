@@ -191,7 +191,7 @@ const SingleDemandePersonnel = () => {
                     <Card.Body>
                       <div className="mt-n5">
                         {/* <img
-                  src={`http://localhost:5000/files/personnelFiles/PhotoProfil/${state.state?.personnelId.photo_profil}`}
+                  src={`${process.env.REACT_APP_API_URL}/files/personnelFiles/PhotoProfil/${state.state?.personnelId.photo_profil}`}
                   alt=""
                           className="rounded-circle p-1 bg-body mt-n5" width="150"
                         /> */}
